@@ -1,0 +1,75 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /user-process-management
+
+# Configuration => prometheus.yml:
+#   scrape_configs:
+#     metrics_path: '/actuator/prometheus'
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health'
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    kafka:
+      enabled: false
+    kubernetes:
+      enabled: false
+
+spring:
+  application:
+    name: user-process-management
+  sleuth:
+    opentracing:
+      enabled: true
+    baggage:
+      correlation-enabled: true
+      correlation-fields: x-request-id, X-Primary-Request-URL
+      remote-fields: x-request-id, x-access-token, X-Primary-Request-URL
+
+springdoc:
+  swagger-ui:
+    path: "/swagger"
+    csrf:
+      enabled: true
+
+platform:
+  logging:
+    aspect:
+      enabled: false
+    primary-url:
+      enabled: true
+
+ceph:
+  bucket: ${CEPH_BUCKET_NAME:bucket}
+
+logbook:
+  feign:
+    enabled: true
+  info-logging:
+    enabled: true
+  strategy: without-body
+  exclude:
+    - /user-process-management/v3/api-docs/**
+    - /user-process-management/swagger-ui/**
+    - /user-process-management/actuator/**
+    - /user-process-management/swagger
+  obfuscate:
+    headers:
+      - x-access-token
+      - x-id-token
+      - x-userinfo

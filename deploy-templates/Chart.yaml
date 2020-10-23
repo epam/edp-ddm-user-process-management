@@ -1,0 +1,6 @@
+apiVersion: v2
+description: Chart for deployng user-process-management
+maintainers:
+- email: dmytro_zinchenko1@epam.com
+name: user-process-management
+version: 0.0.1

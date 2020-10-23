@@ -1,0 +1,5 @@
+**** xref:user-process-management:summary.adoc[Сервіс управління бізнес-процесами користувача]
+***** xref:user-process-management:dependencies.adoc[Залежності / Пов'язані компоненти]
+***** xref:user-process-management:microservice-design.adoc[Низькорівневий дизайн]
+***** xref:user-process-management:deployment-diagram.adoc[Діаграма розгортання]
+***** xref:user-process-management:technologies.adoc[Технологічний стек]

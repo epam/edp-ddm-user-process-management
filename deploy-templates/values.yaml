@@ -1,0 +1,48 @@
+global:
+  disableRequestsLimits: false
+
+image:
+  name: user-process-management
+  version: latest
+port: 8080
+service:
+  type: ClusterIP
+  port: 8080
+replicas: 1
+appConfigMountPath: "/app/config"
+readinessPath: "/user-process-management/actuator/health/readiness"
+livenessPath: "/user-process-management/actuator/health/liveness"
+cephSecretMountPath: "/app/secrets/ceph"
+
+prometheus:
+  endpoints:
+    - scrapePath: "/user-process-management/actuator/prometheus"
+      port: "{{ .Values.service.port }}"
+
+ingress: # expose the service with a route or an ingress depending on platform type
+  platform: openshift # openshift or kubernetes
+
+monitoring:
+  namespace: openshift-monitoring
+
+ceph:
+  bucketName: lowcode-form-data-storage
+  host: ${CEPH_BUCKET_HOST}
+
+s3:
+  config:
+    client:
+      protocol: http
+    options:
+      pathStyleAccess: true
+
+keycloak:
+  realms:
+    officer: officer-portal
+    citizen: citizen-portal
+    admin: admin
+  certificatesEndpoint: /protocol/openid-connect/certs
+
+deployProfile: prod
+
+javaOpts: "-Xms512m -Xmx512m"
