@@ -1,0 +1,22 @@
+image:
+  name: user-process-management
+  version: latest
+port: 8080
+service:
+  type: ClusterIP
+  port: 8080
+replicas: 1
+appConfigMountPath: "/app/config"
+prometheusScrapePath: "/actuator/prometheus"
+readinessPath: "/user-process-management/actuator/health/readiness"
+livenessPath: "/user-process-management/actuator/health/liveness"
+cephSecretMountPath: "/app/secrets/ceph"
+
+ingress: # expose the service with a route or an ingress depending on platform type
+  platform: openshift # openshift or kubernetes
+
+monitoring:
+  namespace: openshift-monitoring
+
+ceph:
+  bucketName: lowcode-form-data-storage
