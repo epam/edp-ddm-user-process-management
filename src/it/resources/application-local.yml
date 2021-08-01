@@ -1,0 +1,9 @@
+bpms:
+  url: http://localhost:8800
+ceph:
+  http-endpoint: http://localhost:8100
+  access-key: access-key
+  secret-key: secret-key
+  bucket: bucket
+form-management-provider:
+  url: http://localhost:8083
