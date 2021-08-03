@@ -7,11 +7,13 @@ metadata:
     app: upm-{{ .Values.namespace }}
 spec:
   endpoints:
+    {{- range .Values.prometheus.endpoints }}
     - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
       interval: 30s
-      path: {{ .Values.prometheusScrapePath }}
+      path: {{ .scrapePath }}
       scheme: http
-      targetPort: {{ .Values.service.port }}
+      targetPort: {{ tpl .port $ }}
+    {{- end }}
   jobLabel: app
   namespaceSelector:
     matchNames:

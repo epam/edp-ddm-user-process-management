@@ -7,10 +7,14 @@ service:
   port: 8080
 replicas: 1
 appConfigMountPath: "/app/config"
-prometheusScrapePath: "/actuator/prometheus"
 readinessPath: "/user-process-management/actuator/health/readiness"
 livenessPath: "/user-process-management/actuator/health/liveness"
 cephSecretMountPath: "/app/secrets/ceph"
+
+prometheus:
+  endpoints:
+    - scrapePath: "/user-process-management/actuator/prometheus"
+      port: "{{ .Values.service.port }}"
 
 ingress: # expose the service with a route or an ingress depending on platform type
   platform: openshift # openshift or kubernetes
