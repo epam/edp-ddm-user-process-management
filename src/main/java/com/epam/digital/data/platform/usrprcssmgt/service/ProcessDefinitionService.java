@@ -6,7 +6,7 @@ import com.epam.digital.data.platform.bpms.api.dto.enums.SortOrder;
 import com.epam.digital.data.platform.bpms.client.ProcessDefinitionRestClient;
 import com.epam.digital.data.platform.bpms.client.StartFormRestClient;
 import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
-import com.epam.digital.data.platform.integration.ceph.exception.CephCommuncationException;
+import com.epam.digital.data.platform.integration.ceph.exception.CephCommunicationException;
 import com.epam.digital.data.platform.integration.ceph.service.FormDataCephService;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
 import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
@@ -180,7 +180,7 @@ public class ProcessDefinitionService {
   private void putStringFormDataToCeph(String startFormKey, FormDataDto formData) {
     try {
       cephService.putFormData(startFormKey, formData);
-    } catch (CephCommuncationException ex) {
+    } catch (CephCommunicationException ex) {
       log.warn("Couldn't put form data to ceph", ex);
       throw ex;
     }
