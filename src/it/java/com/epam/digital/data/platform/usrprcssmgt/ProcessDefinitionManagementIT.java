@@ -292,4 +292,14 @@ public class ProcessDefinitionManagementIT extends BaseIT {
     Assertions.assertThat(resultBody.getDetails().getErrors().get(0).getField()).isEqualTo("name");
     Assertions.assertThat(resultBody.getDetails().getErrors().get(0).getValue()).isEqualTo("123");
   }
+
+  @Test
+  public void shouldReturnBadRequestWithBrokenInputJson() throws Exception {
+    MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(
+        "/api/process-definition/someProcess/start-with-form")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"data\" : { \"}}");
+
+    performWithTokenOfficerRole(request).andExpect(status().is(400));
+  }
 }
