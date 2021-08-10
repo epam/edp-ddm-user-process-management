@@ -1,9 +1,9 @@
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
+import com.epam.digital.data.platform.bpms.api.constant.Constants;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryVariableInstanceQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.enums.SortOrder;
 import com.epam.digital.data.platform.bpms.client.HistoryVariableInstanceClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceHistoryRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
@@ -13,6 +13,7 @@ import com.epam.digital.data.platform.usrprcssmgt.model.HistoryProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -36,8 +37,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class HistoryProcessInstanceService {
 
-  private static final String SYS_VAR_PROCESS_COMPLETION_RESULT = "sys-var-process-completion-result";
-
   private final ProcessInstanceHistoryRestClient processInstanceHistoryRestClient;
   private final ProcessInstanceMapper processInstanceMapper;
   private final HistoryVariableInstanceClient historyVariableInstanceClient;
@@ -58,7 +57,7 @@ public class HistoryProcessInstanceService {
                 .sortOrder(page.getSortOrder())
                 .firstResult(page.getFirstResult())
                 .maxResults(page.getMaxResults()).build()));
-    fillStatusTitle(processInstances);
+    postProcess(processInstances);
     return processInstances;
   }
 
@@ -71,7 +70,7 @@ public class HistoryProcessInstanceService {
   public HistoryProcessInstance getHistoryProcessInstanceById(String processInstanceId) {
     var processInstance = processInstanceMapper.toHistoryProcessInstance(
         processInstanceHistoryRestClient.getProcessInstanceById(processInstanceId));
-    fillStatusTitle(Collections.singletonList(processInstance));
+    postProcess(Collections.singletonList(processInstance));
     return processInstance;
   }
 
@@ -83,32 +82,10 @@ public class HistoryProcessInstanceService {
   public CountResultDto getCountProcessInstances() {
     return processInstanceHistoryRestClient.getProcessInstancesCount(
         HistoryProcessInstanceCountQueryDto.builder()
-        .finished(true)
-        .rootProcessInstances(true)
-        .build()
+            .finished(true)
+            .rootProcessInstances(true)
+            .build()
     );
-  }
-
-  private void fillStatusTitle(List<HistoryProcessInstance> processInstances) {
-    var processInstanceIds = processInstances.stream().map(HistoryProcessInstance::getId)
-        .collect(Collectors.toList());
-
-    var historyVariables = historyVariableInstanceClient
-        .getList(HistoryVariableInstanceQueryDto.builder()
-            .variableName(SYS_VAR_PROCESS_COMPLETION_RESULT)
-            .processInstanceIdIn(processInstanceIds)
-            .build());
-
-    var variablesMap = historyVariables.stream()
-        .collect(Collectors.groupingBy(HistoricVariableInstanceDto::getProcessInstanceId));
-
-    for (var processInstance : processInstances) {
-      var status = processInstance.getStatus();
-      var code = status.getCode();
-
-      var variables = variablesMap.getOrDefault(processInstance.getId(), Collections.emptyList());
-      status.setTitle(buildTitle(code, variables));
-    }
   }
 
   private String buildTitle(String code, List<HistoricVariableInstanceDto> variables) {
@@ -123,5 +100,43 @@ public class HistoryProcessInstanceService {
           .orElse(messageResolver.getMessage(ProcessInstanceStatus.COMPLETED));
     }
     return null;
+  }
+
+  private void postProcess(List<HistoryProcessInstance> processInstances) {
+    var processInstanceIds = processInstances.stream().map(HistoryProcessInstance::getId)
+        .collect(Collectors.toList());
+    var historyVariables = historyVariableInstanceClient
+        .getList(HistoryVariableInstanceQueryDto.builder()
+            .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE)
+            .processInstanceIdIn(processInstanceIds)
+            .build());
+    var processInstanceIdVariablesMap = historyVariables.stream()
+        .collect(Collectors.groupingBy(HistoricVariableInstanceDto::getProcessInstanceId,
+            Collectors.groupingBy(HistoricVariableInstanceDto::getName)));
+
+    processInstances.forEach(pi -> {
+      var variableNameVariableInstanceMap = processInstanceIdVariablesMap
+          .getOrDefault(pi.getId(), Collections.emptyMap());
+
+      fillExcerptId(pi, variableNameVariableInstanceMap);
+      fillStatusTitle(pi, variableNameVariableInstanceMap);
+    });
+  }
+
+  private void fillExcerptId(HistoryProcessInstance processInstance,
+      Map<String, List<HistoricVariableInstanceDto>> variablesMap) {
+    if (variablesMap.containsKey(Constants.SYS_VAR_PROCESS_EXCERPT_ID)) {
+      var excerptId = variablesMap.get(Constants.SYS_VAR_PROCESS_EXCERPT_ID).get(0);
+      processInstance.setExcerptId((String) excerptId.getValue());
+    }
+  }
+
+  private void fillStatusTitle(HistoryProcessInstance processInstance,
+      Map<String, List<HistoricVariableInstanceDto>> variablesMap) {
+    var status = processInstance.getStatus();
+    var code = status.getCode();
+    var completionResultVariable = variablesMap.getOrDefault(
+        Constants.SYS_VAR_PROCESS_COMPLETION_RESULT, Collections.emptyList());
+    status.setTitle(buildTitle(code, completionResultVariable));
   }
 }

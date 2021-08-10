@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
+import com.epam.digital.data.platform.bpms.api.constant.Constants;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryVariableInstanceQueryDto;
@@ -218,12 +219,13 @@ public class ProcessInstanceServiceTest {
 
     var variable = new HistoricVariableInstanceDto();
     ReflectionTestUtils.setField(variable, "processInstanceId", testId);
+    ReflectionTestUtils.setField(variable, "name", Constants.SYS_VAR_PROCESS_COMPLETION_RESULT);
     var variableValue = "completed";
     variable.setValue(variableValue);
     when(historyVariableInstanceClient.getList(
         HistoryVariableInstanceQueryDto.builder()
             .processInstanceIdIn(Collections.singletonList(testId))
-            .variableName("sys-var-process-completion-result").build()))
+            .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE).build()))
         .thenReturn(Collections.singletonList(variable));
 
     var result = historyProcessInstanceService.getHistoryProcessInstanceById(testId);

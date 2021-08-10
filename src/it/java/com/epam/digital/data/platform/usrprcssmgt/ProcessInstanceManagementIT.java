@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.epam.digital.data.platform.bpms.api.constant.Constants;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryVariableInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.TaskQueryDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
@@ -424,12 +425,13 @@ public class ProcessInstanceManagementIT extends BaseIT {
             .withHeader("Content-Type", "application/json")
             .withStatus(200)
             .withBody(
-                "[ { \"id\": \"id1\", \"processDefinitionName\":\"processDefinition1\", " +
+                "[ { \"id\": \"id1\", \"name\": \"sys-var-process-completion-result\", " +
+                    "\"processDefinitionName\":\"processDefinition1\", " +
                     "\"startTime\":\"2020-12-01T12:00:00.000Z\", " +
                     "\"endTime\":\"2020-12-02T12:00:00.000Z\" } ]"))));
 
     var requestDto = HistoryVariableInstanceQueryDto.builder()
-        .variableName("sys-var-process-completion-result")
+        .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE)
         .processInstanceIdIn(Collections.singletonList("id1")).build();
     bpmServer.addStubMapping(stubFor(post(urlPathEqualTo("/api/history/variable-instance"))
         .withRequestBody(equalTo(objectMapper.writeValueAsString(requestDto)))
@@ -474,7 +476,7 @@ public class ProcessInstanceManagementIT extends BaseIT {
                     "\"state\":\"COMPLETED\" }"))));
 
     var requestDto = HistoryVariableInstanceQueryDto.builder()
-        .variableName("sys-var-process-completion-result")
+        .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE)
         .processInstanceIdIn(Collections.singletonList("testId")).build();
     bpmServer.addStubMapping(stubFor(post(urlPathEqualTo("/api/history/variable-instance"))
         .withRequestBody(equalTo(objectMapper.writeValueAsString(requestDto)))
@@ -482,7 +484,7 @@ public class ProcessInstanceManagementIT extends BaseIT {
             .withHeader("Content-Type", "application/json")
             .withStatus(200)
             .withBody(
-                "[{\"id\":\"id1\", \"processInstanceId\":\"testId\", \"value\":\"value1\"}]"))
+                "[{\"id\":\"id1\", \"name\": \"sys-var-process-completion-result\", \"processInstanceId\":\"testId\", \"value\":\"value1\"}]"))
     ));
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
@@ -577,6 +579,38 @@ public class ProcessInstanceManagementIT extends BaseIT {
             SystemErrorDto.class);
 
     Assertions.assertThat(resultBody.getMessage()).isEqualTo("Forbidden");
+  }
+
+  @Test
+  public void shouldReturnExcerptId() throws JsonProcessingException {
+    var historicProcessInstanceEntity = new HistoricProcessInstanceEntity();
+    historicProcessInstanceEntity.setId("testId");
+    var processInstanceDto = HistoricProcessInstanceDto
+        .fromHistoricProcessInstance(historicProcessInstanceEntity);
+
+    mockGetProcessInstancesRequest(200,
+        objectMapper.writeValueAsString(Lists.newArrayList(processInstanceDto)));
+
+    var requestDto = HistoryVariableInstanceQueryDto.builder()
+        .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE)
+        .processInstanceIdIn(Collections.singletonList("testId")).build();
+    bpmServer.addStubMapping(stubFor(post(urlPathEqualTo("/api/history/variable-instance"))
+        .withRequestBody(equalTo(objectMapper.writeValueAsString(requestDto)))
+        .willReturn(aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(200)
+            .withBody("[{\"id\":\"id1\", \"name\": \"sys-var-process-excerpt-id\", "
+                    + "\"processInstanceId\":\"testId\", \"value\":\"1234\"}]"))
+    ));
+
+    MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+        .get("/api/history/process-instance")
+        .accept(MediaType.APPLICATION_JSON_VALUE);
+    var result = performForObject(request, this::performWithTokenOfficerRole,
+        HistoryProcessInstance[].class);
+
+    Assertions.assertThat(result).isNotNull();
+    Assertions.assertThat(result[0].getExcerptId()).isEqualTo("1234");
   }
 
   private void mockGetProcessInstancesRequest(int statusCode, String body) {
