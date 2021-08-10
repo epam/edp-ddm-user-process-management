@@ -1,7 +1,6 @@
 package com.epam.digital.data.platform.usrprcssmgt.model;
 
 import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +20,5 @@ public class HistoryProcessInstance {
   private LocalDateTime startTime;
   private LocalDateTime endTime;
   private HistoryStatusModel status;
+  private String excerptId;
 }
