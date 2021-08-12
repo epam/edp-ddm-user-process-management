@@ -115,14 +115,26 @@ public abstract class BaseIT {
   }
 
   @SneakyThrows
-  public void mockValidationFormData(int status, String reqBody, String respBody) {
+  public void mockValidationFormData(int status, String respBody) {
     formProviderServer.addStubMapping(
         stubFor(post(urlPathEqualTo("/formKey/submission"))
-            .withRequestBody(equalTo(reqBody))
+            .withRequestBody(equalTo("{\"data\":{\"formData\":\"testData\"}}"))
             .withQueryParam("dryrun", equalTo("1"))
             .willReturn(aResponse()
                 .withHeader("Content-Type", "application/json")
                 .withStatus(status)
+                .withBody(respBody)
+            )
+        ));
+  }
+
+  @SneakyThrows
+  public void mockFetForm(String respBody) {
+    formProviderServer.addStubMapping(
+        stubFor(get(urlPathEqualTo("/formKey"))
+            .willReturn(aResponse()
+                .withHeader("Content-Type", "application/json")
+                .withStatus(200)
                 .withBody(respBody)
             )
         ));
