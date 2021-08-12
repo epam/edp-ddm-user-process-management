@@ -168,6 +168,8 @@ public class ProcessDefinitionManagementIT extends BaseIT {
 
   @Test
   public void startProcessInstanceWithForm() {
+    var formDtoResponse = "{\"components\":[{\"key\":\"name\",\"type\":\"textfield\"},{\"key\":\"createdDate\","
+        + "\"type\":\"day\"}]}";
     var processInstanceId = "processInstanceId";
     var processDefinitionId = "processDefinitionId";
     var payload = "{\"data\":{\"formData\":\"testData\"},\"signature\":\"eSign\",\"x-access-token\":\"" + tokenConfig.getValueWithRoleOfficer() + "\"}";
@@ -199,7 +201,8 @@ public class ProcessDefinitionManagementIT extends BaseIT {
                 .withBody("{ \"key\":\"formKey\" }"))));
 
     mockPutStartFormCephKey(payload);
-    mockValidationFormData(200, payload, payload);
+    mockValidationFormData(200, payload);
+    mockFetForm(formDtoResponse);
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
         .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionId))
@@ -268,16 +271,8 @@ public class ProcessDefinitionManagementIT extends BaseIT {
                 .withHeader("Content-Type", "application/json")
                 .withBody("{ \"key\":\"formKey\" }"))));
 
-    formProviderServer.addStubMapping(
-        stubFor(get(urlPathEqualTo("/formKey"))
-            .willReturn(aResponse()
-                .withHeader("Content-Type", "application/json")
-                .withStatus(200)
-                .withBody(formDtoResponse)
-            )
-        ));
-
-    mockValidationFormData(400, payload, errorValidationResponse);
+    mockValidationFormData(400, errorValidationResponse);
+    mockFetForm(formDtoResponse);
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
         .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionId))
@@ -288,9 +283,9 @@ public class ProcessDefinitionManagementIT extends BaseIT {
         .readValue(result.getResponse().getContentAsString(StandardCharsets.UTF_8),
             ValidationErrorDto.class);
 
-    Assertions.assertThat(resultBody.getDetails().getErrors().size()).isEqualTo(1);
+    Assertions.assertThat(resultBody.getDetails().getErrors().size()).isEqualTo(2);
     Assertions.assertThat(resultBody.getDetails().getErrors().get(0).getField()).isEqualTo("name");
-    Assertions.assertThat(resultBody.getDetails().getErrors().get(0).getValue()).isEqualTo("123");
+    Assertions.assertThat(resultBody.getDetails().getErrors().get(1).getField()).isEqualTo("createdDate");
   }
 
   @Test
