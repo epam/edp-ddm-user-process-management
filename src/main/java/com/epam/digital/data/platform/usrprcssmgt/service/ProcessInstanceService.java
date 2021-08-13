@@ -1,9 +1,9 @@
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.ProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.TaskQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.enums.SortOrder;
 import com.epam.digital.data.platform.bpms.client.CamundaTaskRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceHistoryRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
@@ -111,7 +111,8 @@ public class ProcessInstanceService {
     var taskQueryDto = TaskQueryDto.builder()
         .processInstanceIdIn(processInstanceIds)
         .build();
-    return taskClient.getTasksByParams(taskQueryDto).stream()
+    var paginationQueryDto = PaginationQueryDto.builder().build();
+    return taskClient.getTasksByParams(taskQueryDto, paginationQueryDto).stream()
         .collect(Collectors.groupingBy(TaskDto::getProcessInstanceId));
   }
 
