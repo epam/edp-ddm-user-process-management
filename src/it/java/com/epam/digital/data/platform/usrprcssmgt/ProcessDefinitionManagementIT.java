@@ -253,7 +253,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
     var processDefinitionId = "processDefinitionId";
     var payload = "{\"data\":{\"formData\":\"testData\"},\"signature\":\"eSign\",\"x-access-token\":\"" + tokenConfig.getValueWithRoleOfficer() + "\"}";
     var errorValidationResponse = "{\"details\": [{\"message\": \"Field name is required\","
-        + "\"context\": {\"key\": \"name\",\"value\": \"123\" }}, {\"message\": \"Field name is required\","
+        + "\"context\": {\"key\": \"name\",\"value\": \"123\" }}, {\"message\": \"Field createdDate is required\","
         + "\"context\": {\"key\": \"createdDate\",\"value\": \"321\" }}]}";
     bpmServer.addStubMapping(
         stubFor(get(urlEqualTo(String.format("/api/process-definition/%s", processDefinitionId)))
