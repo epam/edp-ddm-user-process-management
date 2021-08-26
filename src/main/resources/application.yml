@@ -30,7 +30,9 @@ management:
     webservices:
       readiness:
         services:
-          - ${bpms.url}/actuator/health
+          - ${bpms.url}/actuator/health/readiness
+    kubernetes:
+      enabled: false
 
 spring:
   application:
@@ -42,6 +44,11 @@ spring:
       correlation-enabled: true
       correlation-fields: x-request-id
       remote-fields: x-request-id, x-access-token
+  cloud:
+    discovery:
+      client:
+        health-indicator:
+          enabled: false
 
 springdoc:
   swagger-ui:
