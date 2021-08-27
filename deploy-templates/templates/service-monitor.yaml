@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Values.monitoring.namespace }}
   labels:
     app: upm-{{ .Values.namespace }}
+    relatedNamespace: {{ .Release.Namespace }}
 spec:
   endpoints:
     {{- range .Values.prometheus.endpoints }}
