@@ -69,7 +69,7 @@ public class ProcessDefinitionServiceTest {
 
     var result = processDefinitionService.countProcessDefinitions(new GetProcessDefinitionsParams());
 
-    assertThat(result, is(expectedCountDto));
+    assertThat(result.getCount(), is(7L));
   }
 
   @Test
@@ -119,6 +119,11 @@ public class ProcessDefinitionServiceTest {
   @Test
   public void startProcessInstance() {
     var processDefinitionId = "processDefinitionId";
+    var processDefinition = new ProcessDefinitionEntity();
+    processDefinition.setKey("processDefinitionKet");
+    processDefinition.setId(processDefinitionId);
+    when(processDefinitionRestClient.getProcessDefinition(processDefinitionId))
+        .thenReturn(ProcessDefinitionDto.fromProcessDefinition(processDefinition));
     var processInstanceId = "processInstanceId";
     var execution = new ExecutionEntity();
     execution.setId(processInstanceId);

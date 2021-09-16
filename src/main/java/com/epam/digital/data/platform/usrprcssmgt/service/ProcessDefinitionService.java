@@ -17,7 +17,6 @@ import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsPar
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
 import com.epam.digital.data.platform.usrprcssmgt.util.CephKeyProvider;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -70,9 +69,16 @@ public class ProcessDefinitionService {
    * @return process definition entity
    */
   public UserProcessDefinitionDto getProcessDefinitionById(String id) {
+    log.info("Getting process definition by id - {}", id);
+
     var userProcessDefinitionDto = processDefinitionMapper
         .toUserProcessDefinitionDto(processDefinitionRestClient.getProcessDefinition(id));
-    fillProcessDefinitionFormKey(Collections.singletonList(userProcessDefinitionDto));
+    log.trace("Found process definition - {}", userProcessDefinitionDto);
+
+    fillProcessDefinitionFormKey(List.of(userProcessDefinitionDto), List.of(id));
+    log.trace("Process definition filled - {}", userProcessDefinitionDto);
+
+    log.info("Process definition with id {} is found", id);
     return userProcessDefinitionDto;
   }
 
@@ -83,11 +89,16 @@ public class ProcessDefinitionService {
    * @return an entity that defines the number of process definitions.
    */
   public CountResultDto countProcessDefinitions(GetProcessDefinitionsParams params) {
-    return this.processDefinitionRestClient.getProcessDefinitionsCount(
+    log.info("Getting count of process definitions. Params: {}", params);
+
+    var countDto = processDefinitionRestClient.getProcessDefinitionsCount(
         ProcessDefinitionQueryDto.builder().latestVersion(true)
             .active(params.isActive())
             .suspended(params.isSuspended())
             .build());
+
+    log.info("Count of process definitions is found - {}", countDto.getCount());
+    return countDto;
   }
 
   /**
@@ -98,6 +109,8 @@ public class ProcessDefinitionService {
    * @return a list of process definitions.
    */
   public List<UserProcessDefinitionDto> getProcessDefinitions(GetProcessDefinitionsParams params) {
+    log.info("Getting list of process definitions. Params: {}", params);
+
     var processDefinitionDtos = processDefinitionRestClient.getProcessDefinitionsByParams(
         ProcessDefinitionQueryDto.builder().latestVersion(true)
             .active(params.isActive())
@@ -106,7 +119,16 @@ public class ProcessDefinitionService {
             .sortOrder(SortOrder.ASC.stringValue()).build());
     var userProcessDefinitionDtos = processDefinitionMapper
         .toUserProcessDefinitionDtos(processDefinitionDtos);
-    fillProcessDefinitionFormKey(userProcessDefinitionDtos);
+    log.trace("Found process definitions - {}", userProcessDefinitionDtos);
+
+    var processDefinitionIds = userProcessDefinitionDtos.stream()
+        .map(UserProcessDefinitionDto::getId)
+        .collect(Collectors.toList());
+    fillProcessDefinitionFormKey(userProcessDefinitionDtos, processDefinitionIds);
+    log.trace("Filled process definitions - {}", userProcessDefinitionDtos);
+
+    log.info("List of process definitions is found. Size - {}, ids - {}", processDefinitionDtos.size(),
+        processDefinitionIds);
     return userProcessDefinitionDtos;
   }
 
@@ -118,9 +140,16 @@ public class ProcessDefinitionService {
    * @return an entity that defines the started process instance
    */
   public StartProcessInstanceResponse startProcessDefinition(String id) {
-    processDefinitionRestClient.getProcessDefinition(id);
-    return processInstanceMapper.toStartProcessInstanceResponse(
+    log.info("Starting process instance for definition with id {}", id);
+
+    var key = processDefinitionRestClient.getProcessDefinition(id).getKey();
+    log.trace("Process definition key found - {}", key);
+
+    var response = processInstanceMapper.toStartProcessInstanceResponse(
         processDefinitionRestClient.startProcessInstance(id, new StartProcessInstanceDto()));
+
+    log.info("Process instance for process definition {} started. Process instance id {}", id, response.getId());
+    return response;
   }
 
   /**
@@ -133,33 +162,46 @@ public class ProcessDefinitionService {
    */
   public StartProcessInstanceResponse startProcessDefinitionWithForm(String id,
       FormDataDto formDataDto) {
+    log.info("Starting process instance for definition with id {}", id);
+    log.trace("Input form data dto - {}", formDataDto);
+
     var processDefinition = processDefinitionRestClient.getProcessDefinition(id);
+    var processDefinitionKey = processDefinition.getKey();
+
+    log.trace("Validating start form");
     var startForm = processDefinitionRestClient.getStartForm(id);
     checkProcessDefinitionStartForm(startForm, id);
     validateFormData(startForm.getKey(), formDataDto);
-    var processDefinitionKey = processDefinition.getKey();
+    log.trace("Put start form data to ceph");
     var uuid = UUID.randomUUID().toString();
     var startFormKey = cephKeyProvider.generateStartFormKey(processDefinitionKey, uuid);
     putStringFormDataToCeph(startFormKey, formDataDto);
     var startProcessInstanceDto = prepareStartProcessInstance(startFormKey);
-    return processInstanceMapper.toStartProcessInstanceResponse(
+
+    log.trace("Starting instance of process definition {} with id - {}", processDefinitionKey, id);
+    var response = processInstanceMapper.toStartProcessInstanceResponse(
         processDefinitionRestClient.startProcessInstance(id, startProcessInstanceDto));
+
+    log.info("Starting process instance of process definition {} with id - {} finished", processDefinitionKey, id);
+    return response;
   }
 
-  private void fillProcessDefinitionFormKey(List<UserProcessDefinitionDto> processDefinitionDtos) {
-    List<String> processDefinitionIds = processDefinitionDtos.stream()
-        .map(UserProcessDefinitionDto::getId)
-        .collect(Collectors.toList());
+  private void fillProcessDefinitionFormKey(List<UserProcessDefinitionDto> processDefinitionDtos,
+                                            List<String> processDefinitionIds) {
+    log.debug("Selecting and filling form keys to process definition list. Ids - {}",
+        processDefinitionIds);
 
     var startFormKeyMap = startFormRestClient.getStartFormKeyMap(
         StartFormQueryDto.builder().processDefinitionIdIn(processDefinitionIds).build());
 
-    processDefinitionDtos.forEach(userProcessDefinitionDto -> {
-      var formKey = startFormKeyMap.get(userProcessDefinitionDto.getId());
+    processDefinitionDtos.forEach(pd -> {
+      var formKey = startFormKeyMap.get(pd.getId());
       if (Objects.nonNull(formKey)) {
-        userProcessDefinitionDto.setFormKey(formKey);
+        log.trace("start form {} defined for process definition {}", formKey, pd.getId());
+        pd.setFormKey(formKey);
       }
     });
+    log.debug("Process definition start forms founded");
   }
 
   private void checkProcessDefinitionStartForm(FormDto startForm, String id) {
@@ -179,18 +221,22 @@ public class ProcessDefinitionService {
 
   private void putStringFormDataToCeph(String startFormKey, FormDataDto formData) {
     try {
+      log.debug("Put start form to ceph. Key - {}, value - {}", startFormKey, formData);
       cephService.putFormData(startFormKey, formData);
     } catch (CephCommunicationException ex) {
       log.warn("Couldn't put form data to ceph", ex);
       throw ex;
     }
+    log.debug("Start form data is put to ceph");
   }
 
   private void validateFormData(String formId, FormDataDto formDataDto) {
+    log.debug("Start validation of start formData {}", formDataDto);
     var formValidationResponseDto = formValidationService.validateForm(formId, formDataDto);
     if (!formValidationResponseDto.isValid()) {
       log.error("Start form data did not pass validation, form key: {}", formId);
       throw new ValidationException(formValidationResponseDto.getError());
     }
+    log.debug("FormData passed the validation");
   }
 }

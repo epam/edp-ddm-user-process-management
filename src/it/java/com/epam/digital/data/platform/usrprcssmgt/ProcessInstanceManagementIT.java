@@ -477,7 +477,7 @@ public class ProcessInstanceManagementIT extends BaseIT {
 
     var requestDto = HistoryVariableInstanceQueryDto.builder()
         .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE)
-        .processInstanceIdIn(Collections.singletonList("testId")).build();
+        .processInstanceId("testId").build();
     bpmServer.addStubMapping(stubFor(post(urlPathEqualTo("/api/history/variable-instance"))
         .withRequestBody(equalTo(objectMapper.writeValueAsString(requestDto)))
         .willReturn(aResponse()
