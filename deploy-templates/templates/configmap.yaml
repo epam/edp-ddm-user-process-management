@@ -8,3 +8,6 @@ data:
     ceph.http-endpoint: {{ .Values.ceph.host }}
     form-management-provider.url: http://form-management-provider:3001
     server.max-http-header-size: 32KB
+    {{- if eq .Values.deployProfile "dev" }}
+    management.endpoints.web.exposure.include: '*'
+    {{- end }}
