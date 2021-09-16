@@ -16,7 +16,6 @@ import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceCountQu
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryVariableInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.ProcessInstanceCountQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.enums.SortOrder;
 import com.epam.digital.data.platform.bpms.client.CamundaTaskRestClient;
 import com.epam.digital.data.platform.bpms.client.HistoryVariableInstanceClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceHistoryRestClient;
@@ -74,7 +73,7 @@ public class ProcessInstanceServiceTest {
 
     var result = processInstanceService.countProcessInstances();
 
-    assertThat(result, is(expectedCountDto));
+    assertThat(result.getCount(), is(7L));
   }
 
   @Test
@@ -89,7 +88,7 @@ public class ProcessInstanceServiceTest {
 
     var result = historyProcessInstanceService.getCountProcessInstances();
 
-    assertThat(result, is(expectedCountDto));
+    assertThat(result.getCount(), is(420L));
   }
 
   @Test
@@ -224,7 +223,7 @@ public class ProcessInstanceServiceTest {
     variable.setValue(variableValue);
     when(historyVariableInstanceClient.getList(
         HistoryVariableInstanceQueryDto.builder()
-            .processInstanceIdIn(Collections.singletonList(testId))
+            .processInstanceId(testId)
             .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE).build()))
         .thenReturn(Collections.singletonList(variable));
 
