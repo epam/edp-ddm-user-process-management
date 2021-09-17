@@ -76,9 +76,9 @@ public class ProcessDefinitionServiceTest {
   public void getProcessDefinitions() {
     var expectedDefinition =
         UserProcessDefinitionDto.builder().id("id")
-        .name("Awesome Definition Name")
-        .formKey("testFormKey")
-        .build();
+            .name("Awesome Definition Name")
+            .formKey("testFormKey")
+            .build();
     var definition = new StubProcessDefinitionDto();
     definition.setId("id");
     definition.setName("Awesome Definition Name");

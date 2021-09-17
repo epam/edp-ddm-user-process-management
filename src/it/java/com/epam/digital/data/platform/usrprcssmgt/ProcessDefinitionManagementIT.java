@@ -202,7 +202,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
 
     mockPutStartFormCephKey(payload);
     mockValidationFormData(200, payload);
-    mockFetForm(formDtoResponse);
+    mockGetForm(formDtoResponse);
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
         .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionId))
@@ -272,7 +272,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
                 .withBody("{ \"key\":\"formKey\" }"))));
 
     mockValidationFormData(400, errorValidationResponse);
-    mockFetForm(formDtoResponse);
+    mockGetForm(formDtoResponse);
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
         .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionId))

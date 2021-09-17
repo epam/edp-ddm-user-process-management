@@ -99,7 +99,8 @@ public abstract class BaseIT {
   protected void mockPutStartFormCephKey(String body) {
     mockGetBucket();
     cephServer.addStubMapping(
-        stubFor(put(urlMatching(String.format("/%s/lowcode_.*_start_form_.*", cephBucketName)))
+        stubFor(put(urlMatching(String
+            .format("/%s/process-definition/testKey/start-form/.*", cephBucketName)))
             .withRequestBody(containing(body))
             .willReturn(aResponse()
                 .withStatus(200))));
@@ -129,7 +130,7 @@ public abstract class BaseIT {
   }
 
   @SneakyThrows
-  public void mockFetForm(String respBody) {
+  public void mockGetForm(String respBody) {
     formProviderServer.addStubMapping(
         stubFor(get(urlPathEqualTo("/formKey"))
             .willReturn(aResponse()
