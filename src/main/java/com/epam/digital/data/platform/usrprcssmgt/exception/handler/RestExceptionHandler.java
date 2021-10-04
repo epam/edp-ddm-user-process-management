@@ -27,15 +27,13 @@ public class RestExceptionHandler {
    */
   @ExceptionHandler(StartFormException.class)
   public ResponseEntity<SystemErrorDto> handleStartFormException(StartFormException ex) {
-
     var systemErrorDto = SystemErrorDto.builder()
         .traceId(MDC.get(BaseRestExceptionHandler.TRACE_ID_KEY))
         .message(ex.getMessage())
         .code(String.valueOf(HttpStatus.BAD_REQUEST.value()))
         .localizedMessage(null)
         .build();
-
+    log.error("Start form does not exist", ex);
     return new ResponseEntity<>(systemErrorDto, HttpStatus.BAD_REQUEST);
   }
-
 }
