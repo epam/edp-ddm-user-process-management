@@ -19,7 +19,7 @@ management:
         liveness:
           include: livenessState
         readiness:
-          include: readinessState, webServices
+          include: readinessState
   health:
     livenessstate:
       enabled: true
@@ -27,10 +27,6 @@ management:
       enabled: true
     kafka:
       enabled: false
-    webservices:
-      readiness:
-        services:
-          - ${bpms.url}/actuator/health/readiness
     kubernetes:
       enabled: false
 
