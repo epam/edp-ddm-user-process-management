@@ -31,12 +31,12 @@ public class ProcessDefinitionController {
   @Autowired
   private ProcessDefinitionService processDefinitionService;
 
-  @GetMapping("/{id}")
+  @GetMapping("/{key}")
   @Operation(
-      summary = "Retrieve process definition by id",
+      summary = "Retrieve process definition by key",
       description = "Returns business process definition entity")
-  public UserProcessDefinitionDto getProcessDefinitionById(@PathVariable("id") String id) {
-    return processDefinitionService.getProcessDefinitionById(id);
+  public UserProcessDefinitionDto getProcessDefinitionByKey(@PathVariable("key") String key) {
+    return processDefinitionService.getProcessDefinitionByKey(key);
   }
 
   @GetMapping
@@ -55,7 +55,7 @@ public class ProcessDefinitionController {
     return processDefinitionService.countProcessDefinitions(params);
   }
 
-  @PostMapping("/{id}/start")
+  @PostMapping("/{key}/start")
   @Operation(
       summary = "Start process instance",
       description = "Returns started process instance")
@@ -72,11 +72,11 @@ public class ProcessDefinitionController {
       responseCode = "500",
       content = @Content(schema = @Schema(implementation = SystemErrorDto.class)))
   @ResponseBody
-  public StartProcessInstanceResponse startProcessInstance(@PathVariable("id") String id) {
-    return processDefinitionService.startProcessDefinition(id);
+  public StartProcessInstanceResponse startProcessInstance(@PathVariable("key") String key) {
+    return processDefinitionService.startProcessDefinition(key);
   }
 
-  @PostMapping("/{id}/start-with-form")
+  @PostMapping("/{key}/start-with-form")
   @Operation(
       summary = "Start process instance with form",
       description = "Returns started process instance")
@@ -93,10 +93,10 @@ public class ProcessDefinitionController {
       responseCode = "500",
       content = @Content(schema = @Schema(implementation = SystemErrorDto.class)))
   @ResponseBody
-  public StartProcessInstanceResponse startProcessInstanceWithForm(@PathVariable("id") String id,
+  public StartProcessInstanceResponse startProcessInstanceWithForm(@PathVariable("key") String key,
       @RequestBody FormDataDto formDataDto,
       @RequestHeader("x-access-token") String accessToken) {
     formDataDto.setAccessToken(accessToken);
-    return processDefinitionService.startProcessDefinitionWithForm(id, formDataDto);
+    return processDefinitionService.startProcessDefinitionWithForm(key, formDataDto);
   }
 }

@@ -82,7 +82,7 @@ public abstract class BaseControllerTest {
     processDefinition.setSuspended(false);
     processDefinition.setFormKey("formKey1");
 
-    lenient().when(processDefinitionService.getProcessDefinitionById("processDefinitionId"))
+    lenient().when(processDefinitionService.getProcessDefinitionByKey("processDefinitionKey"))
         .thenReturn(processDefinition);
   }
 
@@ -92,13 +92,13 @@ public abstract class BaseControllerTest {
   }
 
   private void initStartProcessInstanceResponse() {
-    lenient().when(processDefinitionService.startProcessDefinition("processDefinitionId"))
+    lenient().when(processDefinitionService.startProcessDefinition("processDefinitionKey"))
         .thenReturn(StartProcessInstanceResponse.builder().id("processInstanceId")
             .processDefinitionId("processDefinitionId").ended(true).build());
   }
 
   private void initStartProcessInstanceWithFormResponse() {
-    lenient().when(processDefinitionService.startProcessDefinitionWithForm(eq("processDefinitionId"), any()))
+    lenient().when(processDefinitionService.startProcessDefinitionWithForm(eq("processDefinitionKey"), any()))
         .thenReturn(StartProcessInstanceResponse.builder().id("processInstanceId")
             .processDefinitionId("processDefinitionId").ended(false).build());
   }
