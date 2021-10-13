@@ -27,9 +27,8 @@ import java.util.Map;
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
-import org.camunda.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
 import org.camunda.bpm.engine.rest.dto.repository.StubProcessDefinitionDto;
-import org.camunda.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
+import org.camunda.bpm.engine.rest.dto.runtime.ProcessInstanceWithVariablesDto;
 import org.camunda.bpm.engine.rest.dto.task.FormDto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -98,8 +97,9 @@ public class ProcessDefinitionServiceTest {
   }
 
   @Test
-  public void getProcessDefinitionById() {
+  public void getProcessDefinitionByKey() {
     var processDefinitionId = "id";
+    var processDefinitionKey = "processDefinitionKey";
     var expectedDefinition = UserProcessDefinitionDto.builder()
         .id(processDefinitionId)
         .name("testName")
@@ -108,10 +108,10 @@ public class ProcessDefinitionServiceTest {
     var definition = new StubProcessDefinitionDto();
     definition.setId(processDefinitionId);
     definition.setName("testName");
-    when(processDefinitionRestClient.getProcessDefinition(processDefinitionId)).thenReturn(definition);
+    when(processDefinitionRestClient.getProcessDefinitionByKey(processDefinitionKey)).thenReturn(definition);
     when(startFormRestClient.getStartFormKeyMap(any())).thenReturn(Map.of("id","testFormKey"));
 
-    var result = processDefinitionService.getProcessDefinitionById(processDefinitionId);
+    var result = processDefinitionService.getProcessDefinitionByKey(processDefinitionKey);
 
     assertThat(result, is(expectedDefinition));
   }
@@ -119,20 +119,18 @@ public class ProcessDefinitionServiceTest {
   @Test
   public void startProcessInstance() {
     var processDefinitionId = "processDefinitionId";
+    var processDefinitionKey = "processDefinitionKey";
     var processDefinition = new ProcessDefinitionEntity();
     processDefinition.setKey("processDefinitionKet");
     processDefinition.setId(processDefinitionId);
-    when(processDefinitionRestClient.getProcessDefinition(processDefinitionId))
-        .thenReturn(ProcessDefinitionDto.fromProcessDefinition(processDefinition));
     var processInstanceId = "processInstanceId";
     var execution = new ExecutionEntity();
     execution.setId(processInstanceId);
     execution.setProcessDefinitionId(processDefinitionId);
-    var processInstance = ProcessInstanceDto.fromProcessInstance(execution);
-    when(processDefinitionRestClient.startProcessInstance(eq(processDefinitionId), any()))
-        .thenReturn(processInstance);
+    var processInstance = new ProcessInstanceWithVariablesDto(execution);
+    when(processDefinitionRestClient.startProcessInstanceByKey(eq(processDefinitionKey), any())).thenReturn(processInstance);
 
-    var result = processDefinitionService.startProcessDefinition(processDefinitionId);
+    var result = processDefinitionService.startProcessDefinition(processDefinitionKey);
 
     assertThat(result, is(StartProcessInstanceResponse.builder()
         .id(processInstanceId)
@@ -158,17 +156,15 @@ public class ProcessDefinitionServiceTest {
     var processDefinitionEntity = new ProcessDefinitionEntity();
     processDefinitionEntity.setKey(processDefinitionKey);
 
-    var processDefinition = ProcessDefinitionDto.fromProcessDefinition(processDefinitionEntity);
-    var processInstance = ProcessInstanceDto.fromProcessInstance(execution);
+    var processInstance = new ProcessInstanceWithVariablesDto(execution);
 
-    when(processDefinitionRestClient.getProcessDefinition(processDefinitionId)).thenReturn(processDefinition);
-    when(processDefinitionRestClient.getStartForm(processDefinitionId)).thenReturn(formDto);
+    when(processDefinitionRestClient.getStartFormByKey(processDefinitionKey)).thenReturn(formDto);
     when(cephKeyProvider.generateStartFormKey(eq(processDefinitionKey), any())).thenReturn(cephKey);
-    when(processDefinitionRestClient.startProcessInstance(eq(processDefinitionId), any())).thenReturn(processInstance);
+    when(processDefinitionRestClient.startProcessInstanceByKey(eq(processDefinitionKey), any())).thenReturn(processInstance);
     doNothing().when(formDataCephService).putFormData(eq(cephKey), any());
     when(formValidationService.validateForm(eq("formKey"), any())).thenReturn(formValidationResp);
 
-    var result = processDefinitionService.startProcessDefinitionWithForm(processDefinitionId, new FormDataDto());
+    var result = processDefinitionService.startProcessDefinitionWithForm(processDefinitionKey, new FormDataDto());
 
     assertThat(result, is(StartProcessInstanceResponse.builder()
         .id(processInstanceId)

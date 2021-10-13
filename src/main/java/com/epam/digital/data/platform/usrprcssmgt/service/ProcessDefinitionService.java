@@ -66,20 +66,21 @@ public class ProcessDefinitionService {
   /**
    * Method for getting the process definition entity by id.
    *
-   * @param id process definition identifier
+   * @param key process definition key
    * @return process definition entity
    */
-  public UserProcessDefinitionDto getProcessDefinitionById(String id) {
-    log.info("Getting process definition by id - {}", id);
+  public UserProcessDefinitionDto getProcessDefinitionByKey(String key) {
+    log.info("Getting process definition by key - {}", key);
 
     var userProcessDefinitionDto = processDefinitionMapper
-        .toUserProcessDefinitionDto(processDefinitionRestClient.getProcessDefinition(id));
+        .toUserProcessDefinitionDto(processDefinitionRestClient.getProcessDefinitionByKey(key));
     log.trace("Found process definition - {}", userProcessDefinitionDto);
 
-    fillProcessDefinitionFormKey(List.of(userProcessDefinitionDto), Set.of(id));
+    fillProcessDefinitionFormKey(List.of(userProcessDefinitionDto), Set.of(
+        userProcessDefinitionDto.getId()));
     log.trace("Process definition filled - {}", userProcessDefinitionDto);
 
-    log.info("Process definition with id {} is found", id);
+    log.info("Process definition with key {} is found", key);
     return userProcessDefinitionDto;
   }
 
@@ -137,19 +138,18 @@ public class ProcessDefinitionService {
    * Method for running process instance by process definition id, returns started process instance
    * entity.
    *
-   * @param id process definition identifier
+   * @param key process definition key
    * @return an entity that defines the started process instance
    */
-  public StartProcessInstanceResponse startProcessDefinition(String id) {
-    log.info("Starting process instance for definition with id {}", id);
+  public StartProcessInstanceResponse startProcessDefinition(String key) {
+    log.info("Starting process instance for definition with key {}", key);
 
-    var key = processDefinitionRestClient.getProcessDefinition(id).getKey();
     log.trace("Process definition key found - {}", key);
 
     var response = processInstanceMapper.toStartProcessInstanceResponse(
-        processDefinitionRestClient.startProcessInstance(id, new StartProcessInstanceDto()));
+        processDefinitionRestClient.startProcessInstanceByKey(key, new StartProcessInstanceDto()));
 
-    log.info("Process instance for process definition {} started. Process instance id {}", id, response.getId());
+    log.info("Process instance for process definition {} started. Process instance id {}", key, response.getId());
     return response;
   }
 
@@ -157,33 +157,30 @@ public class ProcessDefinitionService {
    * Method for running process instance by process definition id with start form, returns started
    * process instance entity.
    *
-   * @param id          process definition identifier
+   * @param key          process definition key
    * @param formDataDto start from data
    * @return an entity that defines the started process instance
    */
-  public StartProcessInstanceResponse startProcessDefinitionWithForm(String id,
+  public StartProcessInstanceResponse startProcessDefinitionWithForm(String key,
       FormDataDto formDataDto) {
-    log.info("Starting process instance for definition with id {}", id);
+    log.info("Starting process instance for definition with key {}", key);
     log.trace("Input form data dto - {}", formDataDto);
 
-    var processDefinition = processDefinitionRestClient.getProcessDefinition(id);
-    var processDefinitionKey = processDefinition.getKey();
-
     log.trace("Validating start form");
-    var startForm = processDefinitionRestClient.getStartForm(id);
-    checkProcessDefinitionStartForm(startForm, id);
+    var startForm = processDefinitionRestClient.getStartFormByKey(key);
+    checkProcessDefinitionStartForm(startForm, key);
     validateFormData(startForm.getKey(), formDataDto);
     log.trace("Put start form data to ceph");
     var uuid = UUID.randomUUID().toString();
-    var startFormKey = cephKeyProvider.generateStartFormKey(processDefinitionKey, uuid);
+    var startFormKey = cephKeyProvider.generateStartFormKey(key, uuid);
     putStringFormDataToCeph(startFormKey, formDataDto);
     var startProcessInstanceDto = prepareStartProcessInstance(startFormKey);
 
-    log.trace("Starting instance of process definition {} with id - {}", processDefinitionKey, id);
+    log.trace("Starting instance of process definition {}", key);
     var response = processInstanceMapper.toStartProcessInstanceResponse(
-        processDefinitionRestClient.startProcessInstance(id, startProcessInstanceDto));
+        processDefinitionRestClient.startProcessInstanceByKey(key, startProcessInstanceDto));
 
-    log.info("Starting process instance of process definition {} with id - {} finished", processDefinitionKey, id);
+    log.info("Starting process instance of process definition {} finished", key);
     return response;
   }
 
@@ -205,9 +202,9 @@ public class ProcessDefinitionService {
     log.debug("Process definition start forms founded");
   }
 
-  private void checkProcessDefinitionStartForm(FormDto startForm, String id) {
+  private void checkProcessDefinitionStartForm(FormDto startForm, String key) {
     if (Objects.isNull(startForm) || Objects.isNull(startForm.getKey())) {
-      log.error("Start form does not exist for process definition with id: {}", id);
+      log.error("Start form does not exist for process definition with key: {}", key);
       throw new StartFormException("Start form does not exist!");
     }
   }

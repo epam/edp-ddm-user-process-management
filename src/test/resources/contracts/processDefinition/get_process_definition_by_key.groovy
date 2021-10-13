@@ -3,10 +3,10 @@ package contracts.processDefinition
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "should return user-process by id"
+    description "should return user-process by key"
 
     request {
-        url "/api/process-definition/processDefinitionId"
+        url "/api/process-definition/processDefinitionKey"
         method GET()
     }
 

@@ -6,7 +6,7 @@ Contract.make {
     description 'should return started process instance'
 
     request {
-        urlPath '/api/process-definition/processDefinitionId/start'
+        urlPath '/api/process-definition/processDefinitionKey/start'
         method POST()
     }
 

@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
@@ -46,8 +45,8 @@ public class ProcessDefinitionManagementIT extends BaseIT {
   }
 
   @Test
-  public void getProcessDefinitionById() {
-    bpmServer.addStubMapping(stubFor(get(urlPathEqualTo("/api/process-definition/processDefinitionId"))
+  public void getProcessDefinitionByKey() {
+    bpmServer.addStubMapping(stubFor(get(urlPathEqualTo("/api/process-definition/key/processDefinitionKey"))
         .willReturn(aResponse()
             .withStatus(200)
             .withHeader("Content-Type", "application/json")
@@ -60,7 +59,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
             .withBody("{ \"id1\": \"testFormKey\" }"))));
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-        .get("/api/process-definition/processDefinitionId")
+        .get("/api/process-definition/processDefinitionKey")
         .accept(MediaType.APPLICATION_JSON_VALUE);
     var result = performForObject(request, this::performWithTokenOfficerRole,
         UserProcessDefinitionDto.class);
@@ -109,17 +108,10 @@ public class ProcessDefinitionManagementIT extends BaseIT {
   public void startProcessInstance() {
     var processInstanceId = "processInstanceId";
     var processDefinitionId = "processDefinitionId";
-
-    bpmServer.addStubMapping(
-        stubFor(get(urlEqualTo(String.format("/api/process-definition/%s", processDefinitionId)))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody(
-                    String.format("{ \"id\":\"%s\", \"name\":\"name1\" }", processDefinitionId)))));
+    var processDefinitionKey = "testKey";
 
     bpmServer.addStubMapping(stubFor(
-        post(urlEqualTo(String.format("/api/process-definition/%s/start", processDefinitionId)))
+        post(urlEqualTo(String.format("/api/process-definition/key/%s/start", processDefinitionKey)))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
@@ -129,7 +121,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
                         processDefinitionId)))));
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-        .post(String.format("/api/process-definition/%s/start", processDefinitionId))
+        .post(String.format("/api/process-definition/%s/start", processDefinitionKey))
         .accept(MediaType.APPLICATION_JSON_VALUE).contentType("application/json").content("{}");
     var result = performForObject(request, this::performWithTokenOfficerRole,
         StartProcessInstanceResponse.class);
@@ -141,50 +133,16 @@ public class ProcessDefinitionManagementIT extends BaseIT {
   }
 
   @Test
-  public void failedStartProcessInstance() throws Exception {
-    var processDefinitionId = "processDefinitionId";
-    var errorDto = new SystemErrorDto();
-    errorDto.setMessage("Not found");
-    errorDto.setCode("404");
-
-    bpmServer.addStubMapping(
-        stubFor(get(urlEqualTo(String.format("/api/process-definition/%s", processDefinitionId)))
-            .willReturn(aResponse()
-                .withStatus(404)
-                .withHeader("Content-Type", "application/json")
-                .withBody(objectMapper.writeValueAsString(errorDto)))));
-
-    MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-        .post(String.format("/api/process-definition/%s/start", processDefinitionId))
-        .accept(MediaType.APPLICATION_JSON_VALUE).contentType("application/json").content("{}");
-    var result = performWithTokenOfficerRole(request).andExpect(status().isNotFound()).andReturn();
-
-    var resultBody = objectMapper
-        .readValue(result.getResponse().getContentAsString(StandardCharsets.UTF_8),
-            SystemErrorDto.class);
-
-    Assertions.assertThat(resultBody.getMessage()).isEqualTo("Not found");
-  }
-
-  @Test
   public void startProcessInstanceWithForm() {
     var formDtoResponse = "{\"components\":[{\"key\":\"name\",\"type\":\"textfield\"},{\"key\":\"createdDate\","
         + "\"type\":\"day\"}]}";
     var processInstanceId = "processInstanceId";
     var processDefinitionId = "processDefinitionId";
+    var processDefinitionKey = "testKey";
     var payload = "{\"data\":{\"formData\":\"testData\"},\"signature\":\"eSign\",\"x-access-token\":\"" + tokenConfig.getValueWithRoleOfficer() + "\"}";
 
-    bpmServer.addStubMapping(
-        stubFor(get(urlEqualTo(String.format("/api/process-definition/%s", processDefinitionId)))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody(String
-                    .format("{ \"id\":\"%s\", \"name\":\"name1\", \"key\":\"testKey\"  }",
-                        processDefinitionId)))));
-
     bpmServer.addStubMapping(stubFor(
-        post(urlEqualTo(String.format("/api/process-definition/%s/start", processDefinitionId)))
+        post(urlEqualTo(String.format("/api/process-definition/key/%s/start", processDefinitionKey)))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
@@ -194,7 +152,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
                         processDefinitionId)))));
 
     bpmServer.addStubMapping(stubFor(
-        get(urlEqualTo(String.format("/api/process-definition/%s/startForm", processDefinitionId)))
+        get(urlEqualTo(String.format("/api/process-definition/key/%s/startForm", processDefinitionKey)))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
@@ -205,7 +163,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
     mockGetForm(formDtoResponse);
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-        .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionId))
+        .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionKey))
         .accept(MediaType.APPLICATION_JSON_VALUE).contentType("application/json").content(payload);
     var result = performForObject(request, this::performWithTokenOfficerRole,
         StartProcessInstanceResponse.class);
@@ -218,20 +176,11 @@ public class ProcessDefinitionManagementIT extends BaseIT {
 
   @Test
   public void failedStartProcessInstanceWithForm() throws Exception {
-    var processDefinitionId = "processDefinitionId";
+    var processDefinitionKey = "testKey";
     var payload = "{\"data\":{\"formData\":\"testData\"},\"signature\":\"eSign\"}";
 
-    bpmServer.addStubMapping(
-        stubFor(get(urlEqualTo(String.format("/api/process-definition/%s", processDefinitionId)))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody(String
-                    .format("{ \"id\":\"%s\", \"name\":\"name1\", \"key\":\"testKey\"  }",
-                        processDefinitionId)))));
-
     bpmServer.addStubMapping(stubFor(
-        get(urlEqualTo(String.format("/api/process-definition/%s/startForm", processDefinitionId)))
+        get(urlEqualTo(String.format("/api/process-definition/key/%s/startForm", processDefinitionKey)))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
@@ -240,7 +189,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
     mockPutStartFormCephKey(payload);
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-        .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionId))
+        .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionKey))
         .accept(MediaType.APPLICATION_JSON_VALUE).contentType("application/json").content(payload);
 
     performWithTokenOfficerRole(request).andExpect(status().isBadRequest());
@@ -250,22 +199,14 @@ public class ProcessDefinitionManagementIT extends BaseIT {
   public void failedStartProcessInstanceWithFormInvalidFormData() throws Exception {
     var formDtoResponse = "{\"components\":[{\"key\":\"name\",\"type\":\"textfield\"},{\"key\":\"createdDate\","
         + "\"type\":\"day\"}]}";
-    var processDefinitionId = "processDefinitionId";
+    var processDefinitionKey = "testKey";
     var payload = "{\"data\":{\"formData\":\"testData\"},\"signature\":\"eSign\",\"x-access-token\":\"" + tokenConfig.getValueWithRoleOfficer() + "\"}";
     var errorValidationResponse = "{\"details\": [{\"message\": \"Field name is required\","
         + "\"context\": {\"key\": \"name\",\"value\": \"123\" }}, {\"message\": \"Field createdDate is required\","
         + "\"context\": {\"key\": \"createdDate\",\"value\": \"321\" }}]}";
-    bpmServer.addStubMapping(
-        stubFor(get(urlEqualTo(String.format("/api/process-definition/%s", processDefinitionId)))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody(String
-                    .format("{ \"id\":\"%s\", \"name\":\"name1\", \"key\":\"testKey\"  }",
-                        processDefinitionId)))));
 
     bpmServer.addStubMapping(stubFor(
-        get(urlEqualTo(String.format("/api/process-definition/%s/startForm", processDefinitionId)))
+        get(urlEqualTo(String.format("/api/process-definition/key/%s/startForm", processDefinitionKey)))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
@@ -275,7 +216,7 @@ public class ProcessDefinitionManagementIT extends BaseIT {
     mockGetForm(formDtoResponse);
 
     MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-        .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionId))
+        .post(String.format("/api/process-definition/%s/start-with-form", processDefinitionKey))
         .accept(MediaType.APPLICATION_JSON_VALUE).contentType("application/json").content(payload);
 
     var result = performWithTokenOfficerRole(request).andExpect(status().is4xxClientError()).andReturn();
