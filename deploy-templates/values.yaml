@@ -24,6 +24,7 @@ monitoring:
 
 ceph:
   bucketName: lowcode-form-data-storage
+  host: ${CEPH_BUCKET_HOST}
 
 keycloak:
   realms:
