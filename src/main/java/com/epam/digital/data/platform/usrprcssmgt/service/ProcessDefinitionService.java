@@ -105,7 +105,6 @@ public class ProcessDefinitionService implements ProcessDefinitionApi {
     return startProcessInstance(key, startProcessInstanceDto);
   }
 
-
   private UserProcessDefinitionDto getUserProcessDefinitionByKey(String key) {
     var camundaProcessDefinitionDto = processDefinitionRestClient.getProcessDefinitionByKey(key);
     return processDefinitionMapper.toUserProcessDefinitionDto(camundaProcessDefinitionDto);
