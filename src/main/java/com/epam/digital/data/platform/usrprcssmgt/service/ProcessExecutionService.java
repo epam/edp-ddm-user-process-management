@@ -69,7 +69,7 @@ public class ProcessExecutionService implements ProcessExecutionApi {
   }
 
   private void validateFormData(String formId, FormDataDto formDataDto) {
-    log.debug("Start validation of start formData {}", formDataDto);
+    log.debug("Start validation of start formData");
     var formValidationResponseDto = formValidationService.validateForm(formId, formDataDto);
     if (!formValidationResponseDto.isValid()) {
       log.warn("Start form data did not pass validation, form key: {}", formId);
