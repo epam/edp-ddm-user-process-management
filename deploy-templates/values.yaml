@@ -1,3 +1,6 @@
+global:
+  disableRequestsLimits: false
+
 image:
   name: user-process-management
   version: latest
