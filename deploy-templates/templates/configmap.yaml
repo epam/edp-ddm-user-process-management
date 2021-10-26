@@ -7,4 +7,4 @@ data:
     bpms.url: http://bpms:8080
     ceph.http-endpoint: {{ .Values.ceph.host }}
     form-management-provider.url: http://form-management-provider:3001
-    server.max-http-header-size: 16KB
+    server.max-http-header-size: 32KB
