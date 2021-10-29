@@ -20,6 +20,7 @@ import com.epam.digital.data.platform.usrprcssmgt.util.CephKeyProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +76,7 @@ public class ProcessDefinitionService {
         .toUserProcessDefinitionDto(processDefinitionRestClient.getProcessDefinition(id));
     log.trace("Found process definition - {}", userProcessDefinitionDto);
 
-    fillProcessDefinitionFormKey(List.of(userProcessDefinitionDto), List.of(id));
+    fillProcessDefinitionFormKey(List.of(userProcessDefinitionDto), Set.of(id));
     log.trace("Process definition filled - {}", userProcessDefinitionDto);
 
     log.info("Process definition with id {} is found", id);
@@ -123,7 +124,7 @@ public class ProcessDefinitionService {
 
     var processDefinitionIds = userProcessDefinitionDtos.stream()
         .map(UserProcessDefinitionDto::getId)
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
     fillProcessDefinitionFormKey(userProcessDefinitionDtos, processDefinitionIds);
     log.trace("Filled process definitions - {}", userProcessDefinitionDtos);
 
@@ -187,7 +188,7 @@ public class ProcessDefinitionService {
   }
 
   private void fillProcessDefinitionFormKey(List<UserProcessDefinitionDto> processDefinitionDtos,
-                                            List<String> processDefinitionIds) {
+                                            Set<String> processDefinitionIds) {
     log.debug("Selecting and filling form keys to process definition list. Ids - {}",
         processDefinitionIds);
 

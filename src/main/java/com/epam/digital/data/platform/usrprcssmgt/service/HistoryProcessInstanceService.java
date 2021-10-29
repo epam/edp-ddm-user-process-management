@@ -1,17 +1,18 @@
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
-import com.epam.digital.data.platform.bpms.api.constant.Constants;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryVariableInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.client.HistoryVariableInstanceClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceHistoryRestClient;
+import com.epam.digital.data.platform.dataaccessor.sysvar.Constants;
+import com.epam.digital.data.platform.dataaccessor.sysvar.ProcessCompletionResultVariable;
+import com.epam.digital.data.platform.dataaccessor.sysvar.ProcessExcerptIdVariable;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
 import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.HistoryProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -163,8 +164,8 @@ public class HistoryProcessInstanceService {
   }
 
   private String getExcerptId(Map<String, List<HistoricVariableInstanceDto>> variablesMap) {
-    if (variablesMap.containsKey(Constants.SYS_VAR_PROCESS_EXCERPT_ID)) {
-      var excerptId = variablesMap.get(Constants.SYS_VAR_PROCESS_EXCERPT_ID).get(0);
+    if (variablesMap.containsKey(ProcessExcerptIdVariable.SYS_VAR_PROCESS_EXCERPT_ID)) {
+      var excerptId = variablesMap.get(ProcessExcerptIdVariable.SYS_VAR_PROCESS_EXCERPT_ID).get(0);
       return (String) excerptId.getValue();
     }
     return null;
@@ -181,7 +182,8 @@ public class HistoryProcessInstanceService {
       return null;
     }
 
-    return variablesMap.getOrDefault(Constants.SYS_VAR_PROCESS_COMPLETION_RESULT, Collections.emptyList())
+    return variablesMap.getOrDefault(
+            ProcessCompletionResultVariable.SYS_VAR_PROCESS_COMPLETION_RESULT, List.of())
         .stream()
         .findFirst()
         .map(VariableValueDto::getValue)
