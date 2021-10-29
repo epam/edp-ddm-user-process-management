@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
-import com.epam.digital.data.platform.bpms.api.constant.Constants;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryVariableInstanceQueryDto;
@@ -20,6 +19,8 @@ import com.epam.digital.data.platform.bpms.client.CamundaTaskRestClient;
 import com.epam.digital.data.platform.bpms.client.HistoryVariableInstanceClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceHistoryRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
+import com.epam.digital.data.platform.dataaccessor.sysvar.Constants;
+import com.epam.digital.data.platform.dataaccessor.sysvar.ProcessCompletionResultVariable;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
@@ -218,7 +219,8 @@ public class ProcessInstanceServiceTest {
 
     var variable = new HistoricVariableInstanceDto();
     ReflectionTestUtils.setField(variable, "processInstanceId", testId);
-    ReflectionTestUtils.setField(variable, "name", Constants.SYS_VAR_PROCESS_COMPLETION_RESULT);
+    ReflectionTestUtils.setField(variable, "name",
+        ProcessCompletionResultVariable.SYS_VAR_PROCESS_COMPLETION_RESULT);
     var variableValue = "completed";
     variable.setValue(variableValue);
     when(historyVariableInstanceClient.getList(
