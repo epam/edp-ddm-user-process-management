@@ -3,17 +3,18 @@ package com.epam.digital.data.platform.usrprcssmgt.controller;
 import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.security.annotation.PreAuthorizeAnySystemRole;
+import com.epam.digital.data.platform.usrprcssmgt.api.ProcessDefinitionApi;
+import com.epam.digital.data.platform.usrprcssmgt.api.ProcessExecutionApi;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
-import com.epam.digital.data.platform.usrprcssmgt.service.ProcessDefinitionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,20 +24,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@RequiredArgsConstructor
 @RestController
 @PreAuthorizeAnySystemRole
 @RequestMapping("/api/process-definition")
 public class ProcessDefinitionController {
 
-  @Autowired
-  private ProcessDefinitionService processDefinitionService;
+  private final ProcessDefinitionApi processDefinitionApi;
+  private final ProcessExecutionApi processExecutionApi;
 
   @GetMapping("/{key}")
   @Operation(
       summary = "Retrieve process definition by key",
       description = "Returns business process definition entity")
   public UserProcessDefinitionDto getProcessDefinitionByKey(@PathVariable("key") String key) {
-    return processDefinitionService.getProcessDefinitionByKey(key);
+    return processDefinitionApi.getProcessDefinitionByKey(key);
   }
 
   @GetMapping
@@ -44,7 +46,7 @@ public class ProcessDefinitionController {
       summary = "Retrieve all process definitions",
       description = "Returns business process definitions list")
   public List<UserProcessDefinitionDto> getProcessDefinitions(GetProcessDefinitionsParams params) {
-    return processDefinitionService.getProcessDefinitions(params);
+    return processDefinitionApi.getProcessDefinitions(params);
   }
 
   @GetMapping("/count")
@@ -52,7 +54,7 @@ public class ProcessDefinitionController {
       summary = "Retrieve count of all process definitions",
       description = "Returns business process definitions count")
   public CountResultDto countProcessDefinitions(GetProcessDefinitionsParams params) {
-    return processDefinitionService.countProcessDefinitions(params);
+    return processDefinitionApi.countProcessDefinitions(params);
   }
 
   @PostMapping("/{key}/start")
@@ -73,7 +75,7 @@ public class ProcessDefinitionController {
       content = @Content(schema = @Schema(implementation = SystemErrorDto.class)))
   @ResponseBody
   public StartProcessInstanceResponse startProcessInstance(@PathVariable("key") String key) {
-    return processDefinitionService.startProcessDefinition(key);
+    return processExecutionApi.startProcessDefinition(key);
   }
 
   @PostMapping("/{key}/start-with-form")
@@ -97,6 +99,6 @@ public class ProcessDefinitionController {
       @RequestBody FormDataDto formDataDto,
       @RequestHeader("x-access-token") String accessToken) {
     formDataDto.setAccessToken(accessToken);
-    return processDefinitionService.startProcessDefinitionWithForm(key, formDataDto);
+    return processExecutionApi.startProcessDefinitionWithForm(key, formDataDto);
   }
 }

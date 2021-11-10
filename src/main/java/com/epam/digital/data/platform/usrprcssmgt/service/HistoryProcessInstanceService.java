@@ -9,6 +9,7 @@ import com.epam.digital.data.platform.dataaccessor.sysvar.Constants;
 import com.epam.digital.data.platform.dataaccessor.sysvar.ProcessCompletionResultVariable;
 import com.epam.digital.data.platform.dataaccessor.sysvar.ProcessExcerptIdVariable;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
+import com.epam.digital.data.platform.usrprcssmgt.api.HistoryProcessInstanceApi;
 import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.HistoryProcessInstance;
@@ -27,19 +28,14 @@ import org.camunda.bpm.engine.rest.dto.history.HistoricVariableInstanceDto;
 import org.springframework.stereotype.Service;
 
 /**
- * The HistoryProcessInstanceService class represents a service for {@link HistoryProcessInstance}
- * entity and contains methods for working with a finished process instance.
- * <p>
- * The HistoryProcessInstanceService class provides a method to get a list of finished process
- * instances
- * <p>
- * The HistoryProcessInstanceService class provides a method to get a finished process instance by
- * the specified identifier
+ * Base implementation of {@link HistoryProcessInstanceApi}. A proxy to the {@link
+ * ProcessInstanceHistoryRestClient} that also maps the camunda response to the needed format and
+ * localizes it if needed.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class HistoryProcessInstanceService {
+public class HistoryProcessInstanceService implements HistoryProcessInstanceApi {
 
   private final ProcessInstanceHistoryRestClient processInstanceHistoryRestClient;
   private final HistoryVariableInstanceClient historyVariableInstanceClient;
@@ -48,74 +44,77 @@ public class HistoryProcessInstanceService {
 
   private final MessageResolver messageResolver;
 
-  /**
-   * Method for getting a list of finished process instance entities. The list must be sorted by end
-   * time and in descending order.
-   *
-   * @param page defines the pagination parameters to shrink result lust
-   * @return a list containing all the finished process instances.
-   */
+  @Override
   public List<HistoryProcessInstance> getHistoryProcessInstances(Pageable page) {
     log.info("Getting finished process instances. Parameters: {}", page);
 
-    var historyProcessInstanceQueryDto = buildHistoryProcessInstanceQueryDto(page);
-    var historyProcessInstances = processInstanceHistoryRestClient.getProcessInstances(historyProcessInstanceQueryDto);
-    var processInstanceIds = extractProcessInstanceIds(historyProcessInstances);
-    var groupedProcessInstanceVariables = getGroupedProcessInstanceVariables(processInstanceIds);
+    var historyProcessInstances = getCamundaProcessInstances(page);
+    log.trace("Found {} Camunda process instances", historyProcessInstances.size());
 
-    var result = historyProcessInstances.stream()
-        .map(hpi -> mapToHistoryProcessInstance(hpi, groupedProcessInstanceVariables.getOrDefault(hpi.getId(), List.of())))
-        .collect(Collectors.toList());
-    log.trace("Found process instances - {}", result);
-    log.info("{} process instances are found. Ids: {}", result.size(), processInstanceIds);
+    var result = mapToHistoryProcessInstances(historyProcessInstances);
+    log.trace("Process instances filled with addition info - {}", result);
+
+    log.info("{} process instances are found", result.size());
     return result;
   }
 
-  /**
-   * Method for getting finished process instance entity by id.
-   *
-   * @param processInstanceId process instance identifier.
-   * @return finished process instance.
-   */
+  @Override
   public HistoryProcessInstance getHistoryProcessInstanceById(String processInstanceId) {
     log.info("Get finished process instance by id {}", processInstanceId);
 
-    var processInstance = processInstanceHistoryRestClient.getProcessInstanceById(processInstanceId);
-    var processInstanceVariables = getProcessInstanceVariables(processInstanceId);
+    var processInstance = processInstanceHistoryRestClient.getProcessInstanceById(
+        processInstanceId);
+    log.trace("Found Camunda process instance");
 
-    var result = mapToHistoryProcessInstance(processInstance, processInstanceVariables);
-    log.trace("Found process instance - {}", processInstance);
-    log.info("Process instance {} is found successfully", processInstanceId);
+    var result = mapToHistoryProcessInstance(processInstance);
+    log.trace("Process instance filled with addition info - {}", processInstance);
+
     return result;
   }
 
-  /**
-   * Method for getting the number of root finished process instances
-   *
-   * @return an entity that defines the number of finished process instances.
-   */
+  @Override
   public CountResultDto getCountProcessInstances() {
     log.info("Getting count of finished process instances");
 
-    var countDto = processInstanceHistoryRestClient.getProcessInstancesCount(
-        HistoryProcessInstanceCountQueryDto.builder()
-            .finished(true)
-            .rootProcessInstances(true)
-            .build());
+    var queryDto = HistoryProcessInstanceCountQueryDto.builder()
+        .finished(true)
+        .rootProcessInstances(true)
+        .build();
+    var result = processInstanceHistoryRestClient.getProcessInstancesCount(queryDto);
 
-    log.info("Count of finished process instances is found - {}", countDto.getCount());
-    return countDto;
+    log.info("Count of finished process instances is found - {}", result.getCount());
+    return result;
   }
 
-  private HistoryProcessInstanceQueryDto buildHistoryProcessInstanceQueryDto(Pageable page) {
-    return HistoryProcessInstanceQueryDto.builder().rootProcessInstances(true).finished(true)
+  private List<HistoricProcessInstanceDto> getCamundaProcessInstances(Pageable page) {
+    var historyProcessInstanceQueryDto = HistoryProcessInstanceQueryDto.builder()
+        .rootProcessInstances(true)
+        .finished(true)
         .sortBy(page.getSortBy())
         .sortOrder(page.getSortOrder())
         .firstResult(page.getFirstResult())
-        .maxResults(page.getMaxResults()).build();
+        .maxResults(page.getMaxResults())
+        .build();
+    return processInstanceHistoryRestClient.getProcessInstances(historyProcessInstanceQueryDto);
   }
 
-  private List<String> extractProcessInstanceIds(List<HistoricProcessInstanceDto> processInstances) {
+  /**
+   * Fills process instance objects with addition fields such as excerptId and process instance
+   * status
+   */
+  private List<HistoryProcessInstance> mapToHistoryProcessInstances(
+      List<HistoricProcessInstanceDto> historyProcessInstances) {
+    var processInstanceIds = extractProcessInstanceIds(historyProcessInstances);
+    var groupedProcessInstanceVariables = getGroupedProcessInstanceVariables(processInstanceIds);
+
+    return historyProcessInstances.stream()
+        .map(hpi -> mapToHistoryProcessInstance(hpi,
+            groupedProcessInstanceVariables.getOrDefault(hpi.getId(), List.of())))
+        .collect(Collectors.toList());
+  }
+
+  private List<String> extractProcessInstanceIds(
+      List<HistoricProcessInstanceDto> processInstances) {
     return processInstances.stream()
         .map(HistoricProcessInstanceDto::getId)
         .collect(Collectors.toList());
@@ -123,7 +122,8 @@ public class HistoryProcessInstanceService {
 
   private Map<String, List<HistoricVariableInstanceDto>> getGroupedProcessInstanceVariables(
       List<String> processInstanceIds) {
-    log.debug("Selecting all variables with prefix {} for processInstances {}", Constants.SYS_VAR_PREFIX_LIKE, processInstanceIds);
+    log.debug("Selecting all variables with prefix {} for processInstances {}",
+        Constants.SYS_VAR_PREFIX_LIKE, processInstanceIds);
     var queryDto = HistoryVariableInstanceQueryDto.builder()
         .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE)
         .processInstanceIdIn(processInstanceIds)
@@ -134,8 +134,19 @@ public class HistoryProcessInstanceService {
         .collect(Collectors.groupingBy(HistoricVariableInstanceDto::getProcessInstanceId));
   }
 
+  /**
+   * Fills process instance object with addition fields such as excerptId and process instance
+   * status
+   */
+  private HistoryProcessInstance mapToHistoryProcessInstance(
+      HistoricProcessInstanceDto processInstance) {
+    var processInstanceVariables = getProcessInstanceVariables(processInstance.getId());
+    return mapToHistoryProcessInstance(processInstance, processInstanceVariables);
+  }
+
   private List<HistoricVariableInstanceDto> getProcessInstanceVariables(String processInstanceId) {
-    log.debug("Selecting all variables with prefix {} for processInstance {}", Constants.SYS_VAR_PREFIX_LIKE, processInstanceId);
+    log.debug("Selecting all variables with prefix {} for processInstance {}",
+        Constants.SYS_VAR_PREFIX_LIKE, processInstanceId);
     var queryDto = HistoryVariableInstanceQueryDto.builder()
         .variableNameLike(Constants.SYS_VAR_PREFIX_LIKE)
         .processInstanceId(processInstanceId)
@@ -172,7 +183,7 @@ public class HistoryProcessInstanceService {
   }
 
   private String getStatusTitle(HistoryProcessInstance processInstance,
-                                Map<String, List<HistoricVariableInstanceDto>> variablesMap) {
+      Map<String, List<HistoricVariableInstanceDto>> variablesMap) {
     var code = processInstance.getStatus().getCode();
     if (StringUtils.equals(code, HistoricProcessInstance.STATE_EXTERNALLY_TERMINATED)) {
       return messageResolver.getMessage(ProcessInstanceStatus.EXTERNALLY_TERMINATED);

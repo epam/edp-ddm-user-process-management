@@ -3,10 +3,10 @@ package com.epam.digital.data.platform.usrprcssmgt.controller;
 import com.epam.digital.data.platform.starter.security.annotation.PreAuthorizeAnySystemRole;
 import com.epam.digital.data.platform.starter.security.annotation.PreAuthorizeCitizen;
 import com.epam.digital.data.platform.starter.security.annotation.PreAuthorizeOfficer;
+import com.epam.digital.data.platform.usrprcssmgt.api.ProcessInstanceApi;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.swagger.PageableAsQueryParam;
-import com.epam.digital.data.platform.usrprcssmgt.service.ProcessInstanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProcessInstanceController {
 
   @Autowired
-  private ProcessInstanceService processInstanceService;
+  private ProcessInstanceApi processInstanceApi;
 
   @PreAuthorizeAnySystemRole
   @GetMapping("/process-instance/count")
@@ -34,7 +34,7 @@ public class ProcessInstanceController {
       summary = "Retrieve count of all unfinished process instances wiht root process instance",
       description = "Returns business process instances count")
   public CountResultDto countProcessInstances() {
-    return processInstanceService.countProcessInstances();
+    return processInstanceApi.countProcessInstances();
   }
 
   @PreAuthorizeOfficer
@@ -57,7 +57,7 @@ public class ProcessInstanceController {
                   "\"status\":{\"code\":\"in_progress\", \"title\":\"У виконанні\"}}]")))
   @PageableAsQueryParam
   public List<GetProcessInstanceResponse> getOfficerProcessInstances(@Parameter(hidden = true) Pageable page) {
-    return processInstanceService.getOfficerProcessInstances(page);
+    return processInstanceApi.getOfficerProcessInstances(page);
   }
 
   @PreAuthorizeCitizen
@@ -80,6 +80,6 @@ public class ProcessInstanceController {
                   "\"status\":{\"code\":\"citizen_in_progress\", \"title\":\"Прийнято в обробку\"}}]")))
   @PageableAsQueryParam
   public List<GetProcessInstanceResponse> getCitizenProcessInstances(@Parameter(hidden = true) Pageable page) {
-    return processInstanceService.getCitizenProcessInstances(page);
+    return processInstanceApi.getCitizenProcessInstances(page);
   }
 }

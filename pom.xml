@@ -212,6 +212,7 @@
           <baseClassForTests>
             com.epam.digital.data.platform.usrprcssmgt.controller.BaseControllerTest
           </baseClassForTests>
+          <testFramework>JUNIT5</testFramework>
         </configuration>
       </plugin>
 

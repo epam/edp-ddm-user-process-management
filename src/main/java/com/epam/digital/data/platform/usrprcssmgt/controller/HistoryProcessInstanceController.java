@@ -2,10 +2,10 @@ package com.epam.digital.data.platform.usrprcssmgt.controller;
 
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.security.annotation.PreAuthorizeAnySystemRole;
+import com.epam.digital.data.platform.usrprcssmgt.api.HistoryProcessInstanceApi;
 import com.epam.digital.data.platform.usrprcssmgt.model.HistoryProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.swagger.PageableAsQueryParam;
-import com.epam.digital.data.platform.usrprcssmgt.service.HistoryProcessInstanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -14,8 +14,8 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,10 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @PreAuthorizeAnySystemRole
 @RequestMapping("/api/history/process-instance")
+@RequiredArgsConstructor
 public class HistoryProcessInstanceController {
 
-  @Autowired
-  private HistoryProcessInstanceService historyProcessInstanceService;
+  private final HistoryProcessInstanceApi historyProcessInstanceApi;
 
   @GetMapping
   @Operation(
@@ -53,7 +53,7 @@ public class HistoryProcessInstanceController {
   )
   @PageableAsQueryParam
   public List<HistoryProcessInstance> getHistoryProcessInstances(@Parameter(hidden = true) Pageable page) {
-    return historyProcessInstanceService.getHistoryProcessInstances(page);
+    return historyProcessInstanceApi.getHistoryProcessInstances(page);
   }
 
   @GetMapping("/{id}")
@@ -81,7 +81,7 @@ public class HistoryProcessInstanceController {
       responseCode = "404",
       content = @Content(schema = @Schema(implementation = SystemErrorDto.class)))
   public HistoryProcessInstance getHistoryProcessInstanceById(@PathVariable("id") String id) {
-    return historyProcessInstanceService.getHistoryProcessInstanceById(id);
+    return historyProcessInstanceApi.getHistoryProcessInstanceById(id);
   }
 
   @GetMapping("/count")
@@ -89,6 +89,6 @@ public class HistoryProcessInstanceController {
       summary = "Retrieve count of all historic process instances",
       description = "Returns historic business process instances count")
   public CountResultDto countProcessInstances() {
-    return historyProcessInstanceService.getCountProcessInstances();
+    return historyProcessInstanceApi.getCountProcessInstances();
   }
 }

@@ -1,12 +1,12 @@
-package contracts.processInstance
+package contracts.historyProcessInstance
 
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-  description "should return process-instance count"
+  description "should return history process-instance count"
 
   request {
-    urlPath "/api/process-instance/count"
+    urlPath "/api/history/process-instance/count"
     method GET()
   }
 
@@ -16,7 +16,7 @@ Contract.make {
       contentType applicationJson()
     }
     body(
-        count: 3
+        count: 2
     )
   }
 }
