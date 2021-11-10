@@ -1,62 +1,49 @@
 ## User process management service
 
-##### The main purpose of the user process management service is to provide REST API low-code platform:
+### Overview
 
-* `The application brings the following functionality:`
-    * access to the list of user business processes based on roles and permissions;
-    * initiation of business processes.
+* The main purpose of the user process management service is to provide REST API low-code platform
+  to interact with process instances/definitions;
+* access to the list of user business processes based on roles and permissions;
+* initiation of business processes;
+* access to the history business processes.
 
-##### Spring Actuator configured with Micrometer extension for exporting data in prometheus-compatible format.
-*End-point:* <service>:<port>/actuator/prometheus
+### Usage
 
-*Prometheus configuration example (prometheus.yml):*
+#### Prerequisites:
 
-```
-global:
-  scrape_interval: 10s
-scrape_configs:
-  - job_name: 'spring_micrometer'
-    metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['< service >:< port >']
-```
+* Ceph-storage is configured and running;
+* business-process-management service is configured and running;
+* form-management-provider service is configured and running.
 
-##### Spring Sleuth configured for Istio http headers propagation:
+#### Configuration
 
-- x-access-token
-- x-request-id
-- x-b3-traceid
-- x-b3-spanid
-- x-b3-parentspanid
-- x-b3-sampled
-- x-b3-flags
-- b3
+Available properties are following:
 
-##### Running the tests:
+* `bpms.url` - business process management service base url;
+* `form-management-provider.url` - form management service base url;
+* `ceph.http-endpoint` - ceph base url;
+* `ceph.access-key` - ceph access key;
+* `ceph.secret-key` - ceph secret key;
+* `ceph.bucket` - ceph bucket name.
 
-* Tests could be run via maven command:
-    * `mvn verify` OR using appropriate functions of your IDE.
+#### Run application:
+
+* `java -jar <file-name>.jar`
 
 ### Local development
 
-1. `application-local.yml` is configuration file for local development;
-2. to interact with `business process management` service, set `bpms.url` variable as environment
-   variable or specify it in the configuration file:
-    * by default http://localhost:8090;
-3. logging settings (*level,pattern,output file*) specified in the configuration file;
-4. run spring boot application using 'local' profile:
+1. Run spring boot application using 'local' profile:
     * `mvn spring-boot:run -Drun.profiles=local` OR using appropriate functions of your IDE;
-5. the application will be available on: http://localhost:8080/user-process-management/swagger
+    * `application-local.yml` - configuration file for local profile.
+2. The application will be available on: http://localhost:8085/user-process-management/swagger
 
-##### Logging:
+### Test execution
 
-* `Default:`
-    * For classes with annotation RestController/Service, logging is enabled by default for all
-      public methods of a class;
-* `To set up logging:`
-    * *@Logging* - can annotate a class or method to enable logging;
-    * *@Confidential* - can annotate method or method parameters to exclude confidential data from
-      logs:
-        - For a method - exclude the result of execution;
-        - For method parameters - exclude method parameters;
+* Tests could be run via maven command:
+    * `mvn verify` OR using appropriate functions of your IDE.
+    
+### License
+
+The user-process-management is released under version 2.0 of
+the [Apache License](https://www.apache.org/licenses/LICENSE-2.0).
