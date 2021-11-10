@@ -8,6 +8,7 @@ import com.epam.digital.data.platform.bpms.client.CamundaTaskRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceHistoryRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
+import com.epam.digital.data.platform.usrprcssmgt.api.ProcessInstanceApi;
 import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessInstanceResponse;
@@ -26,75 +27,92 @@ import org.camunda.bpm.engine.rest.dto.task.TaskDto;
 import org.springframework.stereotype.Service;
 
 /**
- * The class represents a service for {@link GetProcessInstanceResponse} entity and contains methods
- * for working with an unfinished process instance.
- * <p>
- * The ProcessInstanceService class provides a method to get the number of unfinished process
- * instances
- * <p>
- * The ProcessInstanceService class provides a method to get list of unfinished process instances
+ * Base implementation of {@link ProcessInstanceApi}. A proxy to the {@link
+ * ProcessInstanceRestClient} that also maps the camunda response to the needed format and localizes
+ * it if needed.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProcessInstanceService {
+public class ProcessInstanceService implements ProcessInstanceApi {
 
   private final ProcessInstanceRestClient processInstanceRestClient;
   private final ProcessInstanceHistoryRestClient processInstanceHistoryRestClient;
   private final CamundaTaskRestClient taskClient;
+
   private final ProcessInstanceMapper processInstanceMapper;
+
   private final MessageResolver messageResolver;
 
-  /**
-   * Method for getting the number of unfinished process instances with root process instance
-   *
-   * @return an entity that defines the number of unfinished process instances.
-   */
+  @Override
   public CountResultDto countProcessInstances() {
     log.info("Getting count of unfinished process instances");
 
-    var result = processInstanceRestClient.getProcessInstancesCount(
-        ProcessInstanceCountQueryDto.builder()
-            .rootProcessInstances(true)
-            .build());
+    var queryDto = ProcessInstanceCountQueryDto.builder()
+        .rootProcessInstances(true)
+        .build();
+    var result = processInstanceRestClient.getProcessInstancesCount(queryDto);
 
     log.info("Count of unfinished process instances is found - {}", result.getCount());
     return result;
   }
 
-  /**
-   * Method for getting a list of unfinished process instances. The list must be sorted by start
-   * time and in ascending order. Performed by a user with the role of an officer.
-   *
-   * @param page defines the pagination parameters to shrink result lust
-   * @return a list of unfinished process instances.
-   */
+  @Override
   public List<GetProcessInstanceResponse> getOfficerProcessInstances(Pageable page) {
-    return getProcessInstances(page, this::getOfficerProcessInstanceStatus);
+    log.info("Getting unfinished officer process instances. Parameters: {}", page);
+
+    var result = getProcessInstances(page, this::getOfficerProcessInstanceStatus);
+
+    log.info("Found {} unfinished officer process instances", result.size());
+    return result;
   }
 
-  /**
-   * Method for getting a list of unfinished process instances. The list must be sorted by start
-   * time and in ascending order. Performed by a user with the citizen role.
-   *
-   * @param page defines the pagination parameters to shrink result lust
-   * @return a list of unfinished process instances.
-   */
+  @Override
   public List<GetProcessInstanceResponse> getCitizenProcessInstances(Pageable page) {
-    return getProcessInstances(page, this::getCitizenProcessInstanceStatus);
+    log.info("Getting unfinished citizen process instances. Parameters: {}", page);
+
+    var result = getProcessInstances(page, this::getCitizenProcessInstanceStatus);
+
+    log.info("Found {} unfinished citizen process instances", result.size());
+    return result;
   }
 
   private List<GetProcessInstanceResponse> getProcessInstances(
       Pageable page,
       BiFunction<Boolean, Boolean, ProcessInstanceStatus> defineProcessInstanceStatusFunction) {
-    log.info("Getting unfinished process instances. Parameters: {}", page);
 
-    var processInstanceQueryDto = buildProcessInstanceQueryDto(page);
-    var processInstances = processInstanceHistoryRestClient.getProcessInstances(processInstanceQueryDto);
+    var processInstances = getCamundaProcessInstances(page);
+    log.trace("Found {} running camunda process instances", processInstances.size());
+
+    var result = mapToGetProcessInstanceResponse(processInstances,
+        defineProcessInstanceStatusFunction);
+    log.trace("Found process instances - {}", result);
+
+    return result;
+  }
+
+  private List<HistoricProcessInstanceDto> getCamundaProcessInstances(Pageable page) {
+    var processInstanceQueryDto = HistoryProcessInstanceQueryDto.builder()
+        .rootProcessInstances(true)
+        .unfinished(true)
+        .firstResult(page.getFirstResult())
+        .maxResults(page.getMaxResults())
+        .sortBy(page.getSortBy())
+        .sortOrder(page.getSortOrder())
+        .build();
+    return processInstanceHistoryRestClient.getProcessInstances(processInstanceQueryDto);
+  }
+
+  /**
+   * Fill camunda process instance object with additional data, such as custom process status
+   */
+  private List<GetProcessInstanceResponse> mapToGetProcessInstanceResponse(
+      List<HistoricProcessInstanceDto> processInstances,
+      BiFunction<Boolean, Boolean, ProcessInstanceStatus> defineProcessInstanceStatusFunction) {
     var processInstanceIds = extractProcessInstanceIds(processInstances);
     var activeTaskCounts = getActiveTaskCounts(processInstanceIds);
 
-    var result = processInstances.stream().map(pi -> {
+    return processInstances.stream().map(pi -> {
       var isSuspended = HistoricProcessInstance.STATE_SUSPENDED.equals(pi.getState());
       var hasActiveTasks = activeTaskCounts.getOrDefault(pi.getId(), 0L) > 0;
       var status = defineProcessInstanceStatusFunction.apply(isSuspended, hasActiveTasks);
@@ -106,21 +124,10 @@ public class ProcessInstanceService {
 
       return resultPi;
     }).collect(Collectors.toList());
-    log.trace("Found process instances - {}", result);
-
-    log.info("Found {} unfinished process instances. Ids - {}", result.size(), processInstanceIds);
-    return result;
   }
 
-  private HistoryProcessInstanceQueryDto buildProcessInstanceQueryDto(Pageable page) {
-    return HistoryProcessInstanceQueryDto.builder().rootProcessInstances(true).unfinished(true)
-        .firstResult(page.getFirstResult())
-        .maxResults(page.getMaxResults())
-        .sortBy(page.getSortBy())
-        .sortOrder(page.getSortOrder()).build();
-  }
-
-  private List<String> extractProcessInstanceIds(List<HistoricProcessInstanceDto> processInstances) {
+  private List<String> extractProcessInstanceIds(
+      List<HistoricProcessInstanceDto> processInstances) {
     return processInstances.stream()
         .map(HistoricProcessInstanceDto::getId)
         .collect(Collectors.toList());
@@ -138,17 +145,20 @@ public class ProcessInstanceService {
     return result;
   }
 
-  protected ProcessInstanceStatus getOfficerProcessInstanceStatus(boolean isSuspended, boolean hasActiveTasks) {
+  private ProcessInstanceStatus getOfficerProcessInstanceStatus(boolean isSuspended,
+      boolean hasActiveTasks) {
     if (isSuspended) {
       return ProcessInstanceStatus.SUSPENDED;
     }
     return hasActiveTasks ? ProcessInstanceStatus.PENDING : ProcessInstanceStatus.IN_PROGRESS;
   }
 
-  private ProcessInstanceStatus getCitizenProcessInstanceStatus(boolean isSuspended, boolean hasActiveTasks) {
+  private ProcessInstanceStatus getCitizenProcessInstanceStatus(boolean isSuspended,
+      boolean hasActiveTasks) {
     if (isSuspended) {
       return ProcessInstanceStatus.CITIZEN_SUSPENDED;
     }
-    return hasActiveTasks ? ProcessInstanceStatus.CITIZEN_PENDING : ProcessInstanceStatus.CITIZEN_IN_PROGRESS;
+    return hasActiveTasks ? ProcessInstanceStatus.CITIZEN_PENDING
+        : ProcessInstanceStatus.CITIZEN_IN_PROGRESS;
   }
 }
