@@ -6,21 +6,19 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
+import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.ProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.client.CamundaTaskRestClient;
-import com.epam.digital.data.platform.bpms.client.ProcessInstanceHistoryRestClient;
+import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
-import com.google.common.collect.ImmutableList;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
-import org.camunda.bpm.engine.impl.persistence.entity.HistoricProcessInstanceEntity;
+import java.util.List;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
-import org.camunda.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -37,7 +35,7 @@ class ProcessInstanceServiceTest {
   @Mock
   private ProcessInstanceRestClient processInstanceRestClient;
   @Mock
-  private ProcessInstanceHistoryRestClient processInstanceHistoryRestClient;
+  private HistoryProcessInstanceRestClient historyProcessInstanceRestClient;
   @Mock
   private CamundaTaskRestClient camundaTaskRestClient;
   @Mock
@@ -64,27 +62,25 @@ class ProcessInstanceServiceTest {
   void getProcessInstances() {
     var dateTime = LocalDateTime.of(2020, 12, 1, 12, 0);
 
-    var historicProcessInstance1 = new HistoricProcessInstanceEntity();
-    historicProcessInstance1.setId("id1");
-    historicProcessInstance1.setProcessDefinitionName("name1");
-    historicProcessInstance1.setStartTime(
-        new Date(dateTime.toInstant(ZoneOffset.UTC).toEpochMilli()));
-    var historicProcessInstance2 = new HistoricProcessInstanceEntity();
-    historicProcessInstance2.setId("id2");
-    historicProcessInstance2.setProcessDefinitionName("name2");
-    historicProcessInstance2.setStartTime(null);
-    var historyDtoSet = ImmutableList.of(
-        HistoricProcessInstanceDto.fromHistoricProcessInstance(historicProcessInstance1),
-        HistoricProcessInstanceDto.fromHistoricProcessInstance(historicProcessInstance2));
+    var historyProcessInstance1 = new HistoryProcessInstanceDto();
+    historyProcessInstance1.setId("id1");
+    historyProcessInstance1.setProcessDefinitionName("name1");
+    historyProcessInstance1.setStartTime(dateTime);
+    var historyProcessInstance2 = new HistoryProcessInstanceDto();
+    historyProcessInstance2.setId("id2");
+    historyProcessInstance2.setProcessDefinitionName("name2");
+    historyProcessInstance2.setStartTime(null);
+    var historyDtoSet = List.of(historyProcessInstance1, historyProcessInstance2);
 
-    when(processInstanceHistoryRestClient.getProcessInstances(
+    when(historyProcessInstanceRestClient.getHistoryProcessInstanceDtosByParams(
         HistoryProcessInstanceQueryDto.builder()
             .rootProcessInstances(true)
             .unfinished(true)
-            .firstResult(10)
-            .maxResults(42)
             .sortBy("dueDate")
             .sortOrder("asc")
+            .build(), PaginationQueryDto.builder()
+            .firstResult(10)
+            .maxResults(42)
             .build()))
         .thenReturn(historyDtoSet);
 

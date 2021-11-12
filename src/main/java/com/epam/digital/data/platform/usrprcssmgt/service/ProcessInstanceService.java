@@ -1,11 +1,13 @@
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
+import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.ProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.TaskQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceStatus;
 import com.epam.digital.data.platform.bpms.client.CamundaTaskRestClient;
-import com.epam.digital.data.platform.bpms.client.ProcessInstanceHistoryRestClient;
+import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
 import com.epam.digital.data.platform.usrprcssmgt.api.ProcessInstanceApi;
@@ -20,9 +22,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
-import org.camunda.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.camunda.bpm.engine.rest.dto.task.TaskDto;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service;
 public class ProcessInstanceService implements ProcessInstanceApi {
 
   private final ProcessInstanceRestClient processInstanceRestClient;
-  private final ProcessInstanceHistoryRestClient processInstanceHistoryRestClient;
+  private final HistoryProcessInstanceRestClient historyProcessInstanceRestClient;
   private final CamundaTaskRestClient taskClient;
 
   private final ProcessInstanceMapper processInstanceMapper;
@@ -91,29 +91,32 @@ public class ProcessInstanceService implements ProcessInstanceApi {
     return result;
   }
 
-  private List<HistoricProcessInstanceDto> getCamundaProcessInstances(Pageable page) {
+  private List<HistoryProcessInstanceDto> getCamundaProcessInstances(Pageable page) {
     var processInstanceQueryDto = HistoryProcessInstanceQueryDto.builder()
         .rootProcessInstances(true)
         .unfinished(true)
-        .firstResult(page.getFirstResult())
-        .maxResults(page.getMaxResults())
         .sortBy(page.getSortBy())
         .sortOrder(page.getSortOrder())
         .build();
-    return processInstanceHistoryRestClient.getProcessInstances(processInstanceQueryDto);
+    var paginationQueryDto = PaginationQueryDto.builder()
+        .firstResult(page.getFirstResult())
+        .maxResults(page.getMaxResults())
+        .build();
+    return historyProcessInstanceRestClient.getHistoryProcessInstanceDtosByParams(
+        processInstanceQueryDto, paginationQueryDto);
   }
 
   /**
    * Fill camunda process instance object with additional data, such as custom process status
    */
   private List<GetProcessInstanceResponse> mapToGetProcessInstanceResponse(
-      List<HistoricProcessInstanceDto> processInstances,
+      List<HistoryProcessInstanceDto> processInstances,
       BiFunction<Boolean, Boolean, ProcessInstanceStatus> defineProcessInstanceStatusFunction) {
     var processInstanceIds = extractProcessInstanceIds(processInstances);
     var activeTaskCounts = getActiveTaskCounts(processInstanceIds);
 
     return processInstances.stream().map(pi -> {
-      var isSuspended = HistoricProcessInstance.STATE_SUSPENDED.equals(pi.getState());
+      var isSuspended = HistoryProcessInstanceStatus.SUSPENDED.equals(pi.getState());
       var hasActiveTasks = activeTaskCounts.getOrDefault(pi.getId(), 0L) > 0;
       var status = defineProcessInstanceStatusFunction.apply(isSuspended, hasActiveTasks);
 
@@ -127,9 +130,9 @@ public class ProcessInstanceService implements ProcessInstanceApi {
   }
 
   private List<String> extractProcessInstanceIds(
-      List<HistoricProcessInstanceDto> processInstances) {
+      List<HistoryProcessInstanceDto> processInstances) {
     return processInstances.stream()
-        .map(HistoricProcessInstanceDto::getId)
+        .map(HistoryProcessInstanceDto::getId)
         .collect(Collectors.toList());
   }
 

@@ -12,7 +12,7 @@ import com.epam.digital.data.platform.usrprcssmgt.controller.config.CustomMockMv
 import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryProcessInstance;
+import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.HistoryStatusModel;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
@@ -184,7 +184,7 @@ public abstract class BaseControllerTest {
   }
 
   private void initGetHistoryProcessInstanceByIdResponse() {
-    var historyProcessInstance = HistoryProcessInstance.builder()
+    var historyProcessInstance = HistoryUserProcessInstance.builder()
         .id("historyProcessInstanceId1")
         .processDefinitionId("processDefinitionId1")
         .processDefinitionName("name3")
@@ -203,7 +203,7 @@ public abstract class BaseControllerTest {
   }
 
   private void initGetHistoryProcessInstancesResponse() {
-    var historyProcessInstance1 = HistoryProcessInstance.builder()
+    var historyProcessInstance1 = HistoryUserProcessInstance.builder()
         .id("historyProcessInstanceId1")
         .processDefinitionId("processDefinitionId1")
         .processDefinitionName("name3")
@@ -214,7 +214,7 @@ public abstract class BaseControllerTest {
             .build())
         .excerptId("excerptId1")
         .build();
-    var historyProcessInstance2 = HistoryProcessInstance.builder()
+    var historyProcessInstance2 = HistoryUserProcessInstance.builder()
         .id("historyProcessInstanceId2")
         .processDefinitionId("processDefinitionId2")
         .processDefinitionName("name4")

@@ -1,13 +1,13 @@
 package com.epam.digital.data.platform.usrprcssmgt.api;
 
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryProcessInstance;
+import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import java.util.List;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
 
 /**
  * The {@link HistoryProcessInstanceApi} class represents a facade with operations on  {@link
- * HistoryProcessInstance} entity. It contains methods for working with a finished process
+ * HistoryUserProcessInstance} entity. It contains methods for working with a finished process
  * instance.
  * <p>
  * Provides such methods as:
@@ -27,7 +27,7 @@ public interface HistoryProcessInstanceApi {
    * @param page defines the pagination parameters to shrink result lust
    * @return a list containing all the finished process instances.
    */
-  List<HistoryProcessInstance> getHistoryProcessInstances(Pageable page);
+  List<HistoryUserProcessInstance> getHistoryProcessInstances(Pageable page);
 
   /**
    * Method for getting finished process instance entity by id.
@@ -35,7 +35,7 @@ public interface HistoryProcessInstanceApi {
    * @param processInstanceId process instance identifier.
    * @return finished process instance.
    */
-  HistoryProcessInstance getHistoryProcessInstanceById(String processInstanceId);
+  HistoryUserProcessInstance getHistoryProcessInstanceById(String processInstanceId);
 
   /**
    * Method for getting the number of root finished process instances

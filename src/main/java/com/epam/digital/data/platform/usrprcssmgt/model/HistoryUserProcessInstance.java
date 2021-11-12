@@ -15,7 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class HistoryProcessInstance {
+public class HistoryUserProcessInstance {
   private String id;
   private String processDefinitionId;
   private String processDefinitionName;
