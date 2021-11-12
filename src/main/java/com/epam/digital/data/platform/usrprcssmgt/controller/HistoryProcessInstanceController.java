@@ -3,7 +3,7 @@ package com.epam.digital.data.platform.usrprcssmgt.controller;
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.security.annotation.PreAuthorizeAnySystemRole;
 import com.epam.digital.data.platform.usrprcssmgt.api.HistoryProcessInstanceApi;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryProcessInstance;
+import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.swagger.PageableAsQueryParam;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +38,7 @@ public class HistoryProcessInstanceController {
       responseCode = "200",
       content = {
           @Content(array = @ArraySchema(uniqueItems = true,
-              schema = @Schema(implementation = HistoryProcessInstance.class)),
+              schema = @Schema(implementation = HistoryUserProcessInstance.class)),
               examples = {@ExampleObject(
                   summary = "History process instances array",
                   description = "Set of history process instances",
@@ -52,7 +52,7 @@ public class HistoryProcessInstanceController {
           )}
   )
   @PageableAsQueryParam
-  public List<HistoryProcessInstance> getHistoryProcessInstances(@Parameter(hidden = true) Pageable page) {
+  public List<HistoryUserProcessInstance> getHistoryProcessInstances(@Parameter(hidden = true) Pageable page) {
     return historyProcessInstanceApi.getHistoryProcessInstances(page);
   }
 
@@ -63,7 +63,7 @@ public class HistoryProcessInstanceController {
   @ApiResponse(
       description = "Returns history process instance",
       responseCode = "200",
-      content = @Content(schema = @Schema(implementation = HistoryProcessInstance.class),
+      content = @Content(schema = @Schema(implementation = HistoryUserProcessInstance.class),
           examples = {@ExampleObject(
               summary = "History process instance",
               description = "History process instance",
@@ -80,7 +80,7 @@ public class HistoryProcessInstanceController {
       description = "History process instance hasn't found",
       responseCode = "404",
       content = @Content(schema = @Schema(implementation = SystemErrorDto.class)))
-  public HistoryProcessInstance getHistoryProcessInstanceById(@PathVariable("id") String id) {
+  public HistoryUserProcessInstance getHistoryProcessInstanceById(@PathVariable("id") String id) {
     return historyProcessInstanceApi.getHistoryProcessInstanceById(id);
   }
 

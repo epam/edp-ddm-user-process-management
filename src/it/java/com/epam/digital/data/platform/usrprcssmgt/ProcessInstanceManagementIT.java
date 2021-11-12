@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryProcessInstance;
+import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.StubRequest;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -71,14 +71,11 @@ class ProcessInstanceManagementIT extends BaseIT {
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("desc"),
-            "rootProcessInstances", equalTo("true"),
-            "unfinished", equalTo("true"),
-            "finished", equalTo("false"),
-            "sortBy", equalTo("name"),
-            "firstResult", equalTo("10"),
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .requestBody(equalToJson("{\"sortOrder\":\"desc\",\"unfinished\":true,"
+            + "\"finished\":false,\"sortBy\":\"name\",\"rootProcessInstances\":true}"))
+        .queryParams(Map.of("firstResult", equalTo("10"),
             "maxResults", equalTo("42")))
         .status(200)
         .responseBody("[ { \"id\": \"id1\", \"processDefinitionName\":\"processDefinition1\", " +
@@ -104,13 +101,10 @@ class ProcessInstanceManagementIT extends BaseIT {
   @Test
   void shouldReturnOfficerProcessInstancesInPendingStatus() {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("asc"),
-            "unfinished", equalTo("true"),
-            "finished", equalTo("false"),
-            "sortBy", equalTo("startTime"),
-            "rootProcessInstances", equalTo("true")))
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
+            + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
         .responseBody("[{\"id\":\"processInstanceId\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
@@ -140,13 +134,10 @@ class ProcessInstanceManagementIT extends BaseIT {
   @Test
   void shouldReturnOfficerProcessInstanceInSuspendedStatus() {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("asc"),
-            "unfinished", equalTo("true"),
-            "finished", equalTo("false"),
-            "sortBy", equalTo("startTime"),
-            "rootProcessInstances", equalTo("true")))
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
+            + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
         .responseBody("[{\"id\":\"processInstanceId\",\"state\":\"SUSPENDED\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
@@ -176,13 +167,10 @@ class ProcessInstanceManagementIT extends BaseIT {
   @Test
   void shouldReturnOfficerProcessInstanceInProgressStatus() {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("asc"),
-            "unfinished", equalTo("true"),
-            "finished", equalTo("false"),
-            "sortBy", equalTo("startTime"),
-            "rootProcessInstances", equalTo("true")))
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
+            + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
         .responseBody("[{\"id\":\"processInstanceId\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
@@ -221,13 +209,11 @@ class ProcessInstanceManagementIT extends BaseIT {
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("asc"),
-            "unfinished", equalTo("true"),
-            "finished", equalTo("false"),
-            "sortBy", equalTo("startTime"),
-            "firstResult", equalTo("10"),
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
+            + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
+        .queryParams(Map.of("firstResult", equalTo("10"),
             "maxResults", equalTo("42")))
         .status(200)
         .responseBody("[ { \"id\": \"id1\", \"processDefinitionName\":\"processDefinition1\", " +
@@ -254,13 +240,10 @@ class ProcessInstanceManagementIT extends BaseIT {
   @Test
   void shouldReturnCitizenProcessInstancesInPendingStatus() {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("asc"),
-            "unfinished", equalTo("true"),
-            "finished", equalTo("false"),
-            "sortBy", equalTo("startTime"),
-            "rootProcessInstances", equalTo("true")))
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
+            + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
         .responseBody("[{\"id\":\"processInstanceId\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
@@ -291,13 +274,10 @@ class ProcessInstanceManagementIT extends BaseIT {
   @Test
   void shouldReturnCitizenProcessInstanceInSuspendedStatus() {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("asc"),
-            "unfinished", equalTo("true"),
-            "finished", equalTo("false"),
-            "sortBy", equalTo("startTime"),
-            "rootProcessInstances", equalTo("true")))
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
+            + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
         .responseBody("[{\"id\":\"processInstanceId\",\"state\":\"SUSPENDED\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
@@ -328,13 +308,10 @@ class ProcessInstanceManagementIT extends BaseIT {
   @Test
   void shouldReturnCitizenProcessInstanceInProgressStatus() {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("asc"),
-            "unfinished", equalTo("true"),
-            "finished", equalTo("false"),
-            "sortBy", equalTo("startTime"),
-            "rootProcessInstances", equalTo("true")))
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
+            + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
         .responseBody("[{\"id\":\"processInstanceId\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
@@ -365,27 +342,17 @@ class ProcessInstanceManagementIT extends BaseIT {
   @Test
   void getHistoryProcessInstances() {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
-        .queryParams(Map.of("sortOrder", equalTo("desc"),
-            "finished", equalTo("true"),
-            "sortBy", equalTo("endTime"),
-            "firstResult", equalTo("10"),
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
+        .queryParams(Map.of("firstResult", equalTo("10"),
             "maxResults", equalTo("1")))
+        .requestBody(equalToJson("{\"sortOrder\":\"desc\",\"unfinished\":false,"
+            + "\"finished\":true,\"sortBy\":\"endTime\",\"rootProcessInstances\":true}"))
         .status(200)
         .responseBody("[ { \"id\": \"id1\", \"name\": \"sys-var-process-completion-result\", " +
             "\"processDefinitionName\":\"processDefinition1\", " +
             "\"startTime\":\"2020-12-01T12:00:00.000Z\", " +
             "\"endTime\":\"2020-12-02T12:00:00.000Z\" } ]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/history/variable-instance"))
-        .requestBody(equalToJson("{\"variableNameLike\":\"sys-var-%\",\"variableName\":null,"
-            + "\"processInstanceIdIn\":[\"id1\"],\"processInstanceId\":null}"))
-        .status(200)
-        .responseBody("[]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
@@ -396,7 +363,7 @@ class ProcessInstanceManagementIT extends BaseIT {
         .queryParam("sortBy", "endTime")
         .accept(MediaType.APPLICATION_JSON_VALUE);
 
-    var result = performForObjectAsOfficer(request, HistoryProcessInstance[].class);
+    var result = performForObjectAsOfficer(request, HistoryUserProcessInstance[].class);
 
     assertThat(result).hasSize(1);
     assertThat(result[0])
@@ -404,7 +371,7 @@ class ProcessInstanceManagementIT extends BaseIT {
         .hasFieldOrPropertyWithValue("processDefinitionName", "processDefinition1")
         .hasFieldOrPropertyWithValue("startTime", LocalDateTime.of(2020, 12, 1, 12, 0, 0, 0))
         .hasFieldOrPropertyWithValue("endTime", LocalDateTime.of(2020, 12, 2, 12, 0, 0, 0))
-        .extracting(HistoryProcessInstance::getStatus)
+        .extracting(HistoryUserProcessInstance::getStatus)
         .hasFieldOrPropertyWithValue("code", null)
         .hasFieldOrPropertyWithValue("title", null);
   }
@@ -413,35 +380,26 @@ class ProcessInstanceManagementIT extends BaseIT {
   void getHistoryProcessInstancesById() {
     mockBpmsRequest(StubRequest.builder()
         .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance/testId"))
+        .path(urlPathEqualTo("/api/extended/history/process-instance/testId"))
         .status(200)
         .responseBody("{ \"id\":\"testId\"," +
             "\"processDefinitionId\":\"Process_00rzvvo:1:01c60bc9-32f3-11eb-aafe-165da9830012\"," +
             "\"processDefinitionName\":\"name\"," +
             "\"startTime\":\"2020-11-30T11:52:00.000Z\"," +
             "\"endTime\":\"2020-12-01T12:00:00.000Z\"," +
-            "\"state\":\"COMPLETED\" }")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/history/variable-instance"))
-        .requestBody(equalToJson("{\"variableNameLike\":\"sys-var-%\",\"variableName\":null,"
-            + "\"processInstanceIdIn\":null,\"processInstanceId\":\"testId\"}"))
-        .status(200)
-        .responseBody("[{\"id\":\"id1\",\"name\":\"sys-var-process-completion-result\","
-            + "\"processInstanceId\":\"testId\",\"value\":\"value1\"}]")
+            "\"state\":\"COMPLETED\"," +
+            "\"processCompletionResult\":\"value1\"}")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
     var request = MockMvcRequestBuilders.get("/api/history/process-instance/testId")
         .accept(MediaType.APPLICATION_JSON_VALUE);
 
-    var result = performForObjectAsOfficer(request, HistoryProcessInstance.class);
+    var result = performForObjectAsOfficer(request, HistoryUserProcessInstance.class);
 
     assertThat(result)
         .hasFieldOrPropertyWithValue("id", "testId")
-        .extracting(HistoryProcessInstance::getStatus)
+        .extracting(HistoryUserProcessInstance::getStatus)
         .hasFieldOrPropertyWithValue("code", "COMPLETED")
         .hasFieldOrPropertyWithValue("title", "value1");
   }
@@ -450,7 +408,7 @@ class ProcessInstanceManagementIT extends BaseIT {
   void failedGetProcessInstance() {
     mockBpmsRequest(StubRequest.builder()
         .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance/testId"))
+        .path(urlPathEqualTo("/api/extended/history/process-instance/testId"))
         .status(404)
         .responseBody("{\"message\":\"Not found\",\"code\":\"404\"}")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
@@ -488,7 +446,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     var result = performForObjectAsOfficerAndExpect(request, SystemErrorDto.class,
         status().isUnauthorized());
 
-    assertThat(result.getMessage()).isEqualTo("Unauthorized");
+    assertThat(result).isNotNull();
   }
 
   @Test
@@ -506,23 +464,12 @@ class ProcessInstanceManagementIT extends BaseIT {
 
   @Test
   void shouldReturnExcerptId() {
-    mockGetProcessInstancesRequest(200, "[{\"id\":\"testId\"}]");
-
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/history/variable-instance"))
-        .requestBody(equalToJson("{\"variableNameLike\":\"sys-var-%\",\"variableName\":null,"
-            + "\"processInstanceIdIn\":[\"testId\"],\"processInstanceId\":null}"))
-        .status(200)
-        .responseBody("[{\"id\":\"id1\", \"name\": \"sys-var-process-excerpt-id\", "
-            + "\"processInstanceId\":\"testId\", \"value\":\"1234\"}]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
+    mockGetProcessInstancesRequest(200, "[{\"id\":\"testId\",\"excerptId\":\"1234\"}]");
 
     var request = MockMvcRequestBuilders.get("/api/history/process-instance")
         .accept(MediaType.APPLICATION_JSON_VALUE);
 
-    var result = performForObjectAsOfficer(request, HistoryProcessInstance[].class);
+    var result = performForObjectAsOfficer(request, HistoryUserProcessInstance[].class);
 
     assertThat(result).isNotNull();
     assertThat(result[0].getExcerptId()).isEqualTo("1234");
@@ -530,8 +477,8 @@ class ProcessInstanceManagementIT extends BaseIT {
 
   private void mockGetProcessInstancesRequest(int statusCode, String body) {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance"))
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/history/process-instance"))
         .status(statusCode)
         .responseBody(body)
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
