@@ -15,7 +15,7 @@ import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceStatus;
 import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
-import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
+import com.epam.digital.data.platform.usrprcssmgt.mapper.HistoryProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.HistoryStatusModel;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import java.time.LocalDateTime;
@@ -41,8 +41,8 @@ class HistoryProcessInstanceServiceTest {
   private MessageResolver messageResolver;
   @Spy
   @InjectMocks
-  private ProcessInstanceMapper processInstanceMapper = Mappers.getMapper(
-      ProcessInstanceMapper.class);
+  private HistoryProcessInstanceMapper historyProcessInstanceMapper = Mappers.getMapper(
+      HistoryProcessInstanceMapper.class);
 
   @Test
   void countHistoryProcessInstances() {

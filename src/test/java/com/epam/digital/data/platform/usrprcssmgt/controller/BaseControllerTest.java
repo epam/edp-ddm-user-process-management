@@ -139,7 +139,7 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name1")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.SUSPENDED.name())
+            .code(ProcessInstanceStatus.SUSPENDED)
             .build())
         .build();
     var processInstance2 = GetProcessInstanceResponse.builder()
@@ -147,7 +147,7 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name2")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 1))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.PENDING.name())
+            .code(ProcessInstanceStatus.PENDING)
             .build())
         .build();
     lenient()
@@ -161,7 +161,7 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name3")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.CITIZEN_SUSPENDED.name())
+            .code(ProcessInstanceStatus.CITIZEN_SUSPENDED)
             .build())
         .build();
     var processInstance2 = GetProcessInstanceResponse.builder()
@@ -169,7 +169,7 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name4")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 1))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.CITIZEN_PENDING.name())
+            .code(ProcessInstanceStatus.CITIZEN_PENDING)
             .build())
         .build();
     lenient()

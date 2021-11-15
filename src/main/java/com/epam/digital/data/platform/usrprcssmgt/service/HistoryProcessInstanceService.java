@@ -6,7 +6,7 @@ import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDt
 import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
 import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.usrprcssmgt.api.HistoryProcessInstanceApi;
-import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
+import com.epam.digital.data.platform.usrprcssmgt.mapper.HistoryProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import java.util.List;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 public class HistoryProcessInstanceService implements HistoryProcessInstanceApi {
 
   private final HistoryProcessInstanceRestClient historyProcessInstanceRestClient;
-  private final ProcessInstanceMapper processInstanceMapper;
+  private final HistoryProcessInstanceMapper historyProcessInstanceMapper;
 
   @Override
   public List<HistoryUserProcessInstance> getHistoryProcessInstances(Pageable page) {
@@ -35,7 +35,7 @@ public class HistoryProcessInstanceService implements HistoryProcessInstanceApi 
     var historyProcessInstances = getCamundaProcessInstances(page);
     log.trace("Found {} Camunda process instances", historyProcessInstances.size());
 
-    var result = processInstanceMapper.toHistoryProcessInstances(historyProcessInstances);
+    var result = historyProcessInstanceMapper.toHistoryProcessInstances(historyProcessInstances);
     log.trace("Process instances filled with addition info - {}", result);
 
     log.info("{} process instances are found", result.size());
@@ -50,7 +50,7 @@ public class HistoryProcessInstanceService implements HistoryProcessInstanceApi 
         processInstanceId);
     log.trace("Found Camunda process instance");
 
-    var result = processInstanceMapper.toHistoryProcessInstance(processInstance);
+    var result = historyProcessInstanceMapper.toHistoryProcessInstance(processInstance);
     log.trace("Process instance filled with addition info - {}", processInstance);
 
     return result;
