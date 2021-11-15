@@ -64,14 +64,6 @@ class ProcessInstanceManagementIT extends BaseIT {
   void getOfficerProcessInstances() {
     mockBpmsRequest(StubRequest.builder()
         .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/task"))
-        .requestBody(equalToJson("{\"processInstanceIdIn\":[\"id1\"]}"))
-        .status(200)
-        .responseBody("[]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
         .path(urlPathEqualTo("/api/extended/history/process-instance"))
         .requestBody(equalToJson("{\"sortOrder\":\"desc\",\"unfinished\":true,"
             + "\"finished\":false,\"sortBy\":\"name\",\"rootProcessInstances\":true}"))
@@ -106,15 +98,7 @@ class ProcessInstanceManagementIT extends BaseIT {
         .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
             + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
-        .responseBody("[{\"id\":\"processInstanceId\"}]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/task"))
-        .requestBody(equalToJson("{\"processInstanceIdIn\":[\"processInstanceId\"]}"))
-        .status(200)
-        .responseBody("[{\"processInstanceId\":\"processInstanceId\"}]")
+        .responseBody("[{\"id\":\"processInstanceId\",\"state\":\"PENDING\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
@@ -128,7 +112,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
             messageResolver.getMessage(ProcessInstanceStatus.PENDING))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.PENDING.name());
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.PENDING);
   }
 
   @Test
@@ -142,14 +126,6 @@ class ProcessInstanceManagementIT extends BaseIT {
         .responseBody("[{\"id\":\"processInstanceId\",\"state\":\"SUSPENDED\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/task"))
-        .requestBody(equalToJson("{\"processInstanceIdIn\":[\"processInstanceId\"]}"))
-        .status(200)
-        .responseBody("[]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
 
     var request = MockMvcRequestBuilders.get("/api/officer/process-instance")
         .queryParam("sortOrder", "asc")
@@ -161,7 +137,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
             messageResolver.getMessage(ProcessInstanceStatus.SUSPENDED))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.SUSPENDED.name());
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.SUSPENDED);
   }
 
   @Test
@@ -172,15 +148,7 @@ class ProcessInstanceManagementIT extends BaseIT {
         .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
             + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
-        .responseBody("[{\"id\":\"processInstanceId\"}]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/task"))
-        .requestBody(equalToJson("{\"processInstanceIdIn\":[\"processInstanceId\"]}"))
-        .status(200)
-        .responseBody("[]")
+        .responseBody("[{\"id\":\"processInstanceId\",\"state\":\"ACTIVE\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
@@ -195,19 +163,11 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
             messageResolver.getMessage(ProcessInstanceStatus.IN_PROGRESS))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.IN_PROGRESS.name());
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.IN_PROGRESS);
   }
 
   @Test
   void getCitizenProcessInstances() {
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/task"))
-        .requestBody(equalToJson("{\"processInstanceIdIn\":[\"id1\"]}"))
-        .status(200)
-        .responseBody("[]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
     mockBpmsRequest(StubRequest.builder()
         .method(HttpMethod.POST)
         .path(urlPathEqualTo("/api/extended/history/process-instance"))
@@ -245,15 +205,7 @@ class ProcessInstanceManagementIT extends BaseIT {
         .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
             + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
-        .responseBody("[{\"id\":\"processInstanceId\"}]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/task"))
-        .requestBody(equalToJson("{\"processInstanceIdIn\":[\"processInstanceId\"]}"))
-        .status(200)
-        .responseBody("[{\"processInstanceId\":\"processInstanceId\"}]")
+        .responseBody("[{\"id\":\"processInstanceId\",\"state\":\"PENDING\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
@@ -268,7 +220,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
             messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_PENDING))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_PENDING.name());
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_PENDING);
   }
 
   @Test
@@ -280,14 +232,6 @@ class ProcessInstanceManagementIT extends BaseIT {
             + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
         .responseBody("[{\"id\":\"processInstanceId\",\"state\":\"SUSPENDED\"}]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/task"))
-        .requestBody(equalToJson("{\"processInstanceIdIn\":[\"processInstanceId\"]}"))
-        .status(200)
-        .responseBody("[]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
@@ -302,7 +246,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
             messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_SUSPENDED))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_SUSPENDED.name());
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_SUSPENDED);
   }
 
   @Test
@@ -313,15 +257,7 @@ class ProcessInstanceManagementIT extends BaseIT {
         .requestBody(equalToJson("{\"sortOrder\":\"asc\",\"unfinished\":true,"
             + "\"finished\":false,\"sortBy\":\"startTime\",\"rootProcessInstances\":true}"))
         .status(200)
-        .responseBody("[{\"id\":\"processInstanceId\"}]")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/task"))
-        .requestBody(equalToJson("{\"processInstanceIdIn\":[\"processInstanceId\"]}"))
-        .status(200)
-        .responseBody("[]")
+        .responseBody("[{\"id\":\"processInstanceId\",\"state\":\"ACTIVE\"}]")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
@@ -336,7 +272,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
             messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_IN_PROGRESS))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_IN_PROGRESS.name());
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_IN_PROGRESS);
   }
 
   @Test

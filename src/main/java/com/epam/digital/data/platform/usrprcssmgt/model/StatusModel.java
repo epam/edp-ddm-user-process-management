@@ -1,5 +1,6 @@
 package com.epam.digital.data.platform.usrprcssmgt.model;
 
+import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,6 @@ import lombok.ToString;
 @ToString
 public class StatusModel {
 
-  private String code;
+  private ProcessInstanceStatus code;
   private String title;
 }
