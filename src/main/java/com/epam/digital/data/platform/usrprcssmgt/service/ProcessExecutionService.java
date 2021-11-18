@@ -1,15 +1,21 @@
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
+import com.epam.digital.data.platform.bpms.client.ProcessDefinitionRestClient;
+import com.epam.digital.data.platform.dataaccessor.sysvar.StartFormCephKeyVariable;
 import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
 import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
 import com.epam.digital.data.platform.usrprcssmgt.api.ProcessExecutionApi;
 import com.epam.digital.data.platform.usrprcssmgt.exception.StartFormException;
+import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
+import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.engine.rest.dto.VariableValueDto;
+import org.camunda.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,7 +27,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProcessExecutionService implements ProcessExecutionApi {
 
-  private final ProcessDefinitionService processDefinitionService;
+  private final ProcessDefinitionRestClient processDefinitionRestClient;
+  private final ProcessInstanceMapper processInstanceMapper;
   private final FormDataService formDataService;
   private final FormValidationService formValidationService;
 
@@ -29,7 +36,7 @@ public class ProcessExecutionService implements ProcessExecutionApi {
   public StartProcessInstanceResponse startProcessDefinition(String key) {
     log.info("Starting process instance for definition with key {}", key);
 
-    var result = processDefinitionService.startProcessDefinition(key);
+    var result = startProcessInstance(key, new StartProcessInstanceDto());
 
     log.info("Process instance for process definition {} started. Process instance id {}", key,
         result.getId());
@@ -41,7 +48,7 @@ public class ProcessExecutionService implements ProcessExecutionApi {
       FormDataDto formDataDto) {
     log.info("Starting process instance with start form for definition with key {}", key);
 
-    var processDefinition = processDefinitionService.getProcessDefinitionByKey(key);
+    var processDefinition = processDefinitionRestClient.getProcessDefinitionByKey(key);
     var startFormKey = getStartFormKey(processDefinition);
     log.trace("Found process definition with key - {} and formKey - {}. Id - {}",
         key, startFormKey, processDefinition.getId());
@@ -52,14 +59,14 @@ public class ProcessExecutionService implements ProcessExecutionApi {
     var formDataKey = formDataService.saveStartFormData(key, formDataDto);
     log.trace("Process definition form data was saved. Id - {}", processDefinition.getId());
 
-    var result = processDefinitionService.startProcessDefinition(key, formDataKey);
+    var result = startProcessDefinition(key, formDataKey);
 
     log.info("Starting process instance of process definition {} with id - {} finished. "
         + "Process instance id {}", key, processDefinition.getId(), result.getId());
     return result;
   }
 
-  private String getStartFormKey(UserProcessDefinitionDto processDefinition) {
+  private String getStartFormKey(DdmProcessDefinitionDto processDefinition) {
     var startFormKey = processDefinition.getFormKey();
     if (Objects.nonNull(startFormKey)) {
       return startFormKey;
@@ -76,5 +83,27 @@ public class ProcessExecutionService implements ProcessExecutionApi {
       throw new ValidationException(formValidationResponseDto.getError());
     }
     log.debug("FormData passed the validation");
+  }
+
+  private StartProcessInstanceResponse startProcessInstance(String key,
+      StartProcessInstanceDto startProcessInstanceDto) {
+    var processInstanceDto = processDefinitionRestClient.startProcessInstanceByKey(key,
+        startProcessInstanceDto);
+    log.trace("Process instance started. Process instanceId - {}", processInstanceDto.getId());
+
+    return processInstanceMapper.toStartProcessInstanceResponse(processInstanceDto);
+  }
+
+  private StartProcessInstanceResponse startProcessDefinition(String key, String formDataKey) {
+    var variableValueDto = new VariableValueDto();
+    variableValueDto.setValue(formDataKey);
+    var variables =
+        Map.of(StartFormCephKeyVariable.START_FORM_CEPH_KEY_VARIABLE_NAME, variableValueDto);
+
+    var startProcessInstanceDto = new StartProcessInstanceDto();
+    startProcessInstanceDto.setVariables(variables);
+
+    log.trace("Starting instance of process definition. Key - {}", key);
+    return startProcessInstance(key, startProcessInstanceDto);
   }
 }

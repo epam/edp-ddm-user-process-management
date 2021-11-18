@@ -4,10 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
+import com.epam.digital.data.platform.bpms.client.ProcessDefinitionRestClient;
+import com.epam.digital.data.platform.dataaccessor.sysvar.StartFormCephKeyVariable;
 import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ErrorsListDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
@@ -15,13 +19,20 @@ import com.epam.digital.data.platform.starter.errorhandling.exception.Validation
 import com.epam.digital.data.platform.starter.validation.dto.FormValidationResponseDto;
 import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
 import com.epam.digital.data.platform.usrprcssmgt.exception.StartFormException;
+import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
+import org.camunda.bpm.engine.rest.dto.VariableValueDto;
+import org.camunda.bpm.engine.rest.dto.runtime.ProcessInstanceWithVariablesDto;
+import org.camunda.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,22 +41,34 @@ class ProcessExecutionServiceTest {
   @InjectMocks
   private ProcessExecutionService processExecutionService;
   @Mock
-  private ProcessDefinitionService processDefinitionService;
+  private ProcessDefinitionRestClient processDefinitionRestClient;
+  @Spy
+  private ProcessInstanceMapper processInstanceMapper = Mappers.getMapper(
+      ProcessInstanceMapper.class);
   @Mock
   private FormDataService formDataService;
   @Mock
   private FormValidationService formValidationService;
 
+  @Captor
+  private ArgumentCaptor<StartProcessInstanceDto> startProcessInstanceDtoArgumentCaptor;
+
   @Test
   void startProcessDefinition() {
-    var processDefinitionId = "processDefinitionId";
-    var startProcessInstanceResponse = Mockito.mock(StartProcessInstanceResponse.class);
-    when(processDefinitionService.startProcessDefinition(processDefinitionId))
-        .thenReturn(startProcessInstanceResponse);
+    var processDefinitionKey = "processDefinitionKey";
+    var processInstanceWithVariablesDto = Mockito.mock(ProcessInstanceWithVariablesDto.class);
+    when(processInstanceWithVariablesDto.getId()).thenReturn("processInstanceId");
+    when(processInstanceWithVariablesDto.getDefinitionId()).thenReturn("processDefinitionId");
+    when(processInstanceWithVariablesDto.isEnded()).thenReturn(true);
+    when(processDefinitionRestClient.startProcessInstanceByKey(eq(processDefinitionKey), any()))
+        .thenReturn(processInstanceWithVariablesDto);
 
-    var result = processExecutionService.startProcessDefinition(processDefinitionId);
+    var result = processExecutionService.startProcessDefinition(processDefinitionKey);
 
-    assertThat(result).isSameAs(startProcessInstanceResponse);
+    assertThat(result)
+        .hasFieldOrPropertyWithValue("id", "processInstanceId")
+        .hasFieldOrPropertyWithValue("processDefinitionId", "processDefinitionId")
+        .hasFieldOrPropertyWithValue("ended", true);
   }
 
   @Test
@@ -54,11 +77,11 @@ class ProcessExecutionServiceTest {
 
     var processDefinitionKey = "processDefinitionKey";
     var startFormKey = "startFormKey";
-    var processDefinition = UserProcessDefinitionDto.builder()
+    var processDefinition = DdmProcessDefinitionDto.builder()
         .key(processDefinitionKey)
         .formKey(startFormKey)
         .build();
-    when(processDefinitionService.getProcessDefinitionByKey(processDefinitionKey))
+    when(processDefinitionRestClient.getProcessDefinitionByKey(processDefinitionKey))
         .thenReturn(processDefinition);
 
     var formValidationResult = FormValidationResponseDto.builder().isValid(true).build();
@@ -69,14 +92,29 @@ class ProcessExecutionServiceTest {
     when(formDataService.saveStartFormData(processDefinitionKey, formDataDto))
         .thenReturn(formDataKey);
 
-    var startProcessInstanceResponse = Mockito.mock(StartProcessInstanceResponse.class);
-    when(processDefinitionService.startProcessDefinition(processDefinitionKey, formDataKey))
-        .thenReturn(startProcessInstanceResponse);
+    var processInstance = Mockito.mock(ProcessInstanceWithVariablesDto.class);
+    when(processInstance.getId()).thenReturn("processInstanceId");
+    when(processInstance.getDefinitionId()).thenReturn("processDefinitionId");
+    when(processInstance.isEnded()).thenReturn(true);
+    when(processDefinitionRestClient.startProcessInstanceByKey(eq(processDefinitionKey),
+        startProcessInstanceDtoArgumentCaptor.capture())).thenReturn(processInstance);
 
     var result = processExecutionService.startProcessDefinitionWithForm(processDefinitionKey,
         formDataDto);
 
-    assertThat(result).isSameAs(startProcessInstanceResponse);
+    var expectedResponse = StartProcessInstanceResponse.builder()
+        .id("processInstanceId")
+        .processDefinitionId("processDefinitionId")
+        .ended(true)
+        .build();
+    assertThat(result).isEqualTo(expectedResponse);
+
+    var startProcessInstanceDto = startProcessInstanceDtoArgumentCaptor.getValue();
+    assertThat(startProcessInstanceDto.getVariables()).hasSize(1)
+        .containsKey(StartFormCephKeyVariable.START_FORM_CEPH_KEY_VARIABLE_NAME)
+        .extractingByKey(StartFormCephKeyVariable.START_FORM_CEPH_KEY_VARIABLE_NAME)
+        .extracting(VariableValueDto::getValue)
+        .isEqualTo(formDataKey);
   }
 
   @Test
@@ -84,10 +122,10 @@ class ProcessExecutionServiceTest {
     var formDataDto = Mockito.mock(FormDataDto.class);
 
     var processDefinitionKey = "processDefinitionKey";
-    var processDefinition = UserProcessDefinitionDto.builder()
+    var processDefinition = DdmProcessDefinitionDto.builder()
         .key(processDefinitionKey)
         .build();
-    when(processDefinitionService.getProcessDefinitionByKey(processDefinitionKey))
+    when(processDefinitionRestClient.getProcessDefinitionByKey(processDefinitionKey))
         .thenReturn(processDefinition);
 
     var ex = assertThrows(StartFormException.class,
@@ -98,7 +136,7 @@ class ProcessExecutionServiceTest {
 
     verify(formValidationService, never()).validateForm(anyString(), any(FormDataDto.class));
     verify(formDataService, never()).saveStartFormData(anyString(), any(FormDataDto.class));
-    verify(processDefinitionService, never()).startProcessDefinition(anyString(), anyString());
+    verify(processDefinitionRestClient, never()).startProcessInstanceByKey(anyString(), any());
   }
 
   @Test
@@ -107,11 +145,11 @@ class ProcessExecutionServiceTest {
 
     var processDefinitionKey = "processDefinitionKey";
     var startFormKey = "startFormKey";
-    var processDefinition = UserProcessDefinitionDto.builder()
+    var processDefinition = DdmProcessDefinitionDto.builder()
         .key(processDefinitionKey)
         .formKey(startFormKey)
         .build();
-    when(processDefinitionService.getProcessDefinitionByKey(processDefinitionKey))
+    when(processDefinitionRestClient.getProcessDefinitionByKey(processDefinitionKey))
         .thenReturn(processDefinition);
 
     var error = ValidationErrorDto.builder()
@@ -138,6 +176,6 @@ class ProcessExecutionServiceTest {
         .hasFieldOrPropertyWithValue("details", error.getDetails());
 
     verify(formDataService, never()).saveStartFormData(anyString(), any(FormDataDto.class));
-    verify(processDefinitionService, never()).startProcessDefinition(anyString(), anyString());
+    verify(processDefinitionRestClient, never()).startProcessInstanceByKey(anyString(), any());
   }
 }
