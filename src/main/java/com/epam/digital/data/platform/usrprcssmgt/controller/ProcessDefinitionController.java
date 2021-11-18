@@ -1,5 +1,6 @@
 package com.epam.digital.data.platform.usrprcssmgt.controller;
 
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
 import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.security.annotation.PreAuthorizeAnySystemRole;
@@ -7,7 +8,6 @@ import com.epam.digital.data.platform.usrprcssmgt.api.ProcessDefinitionApi;
 import com.epam.digital.data.platform.usrprcssmgt.api.ProcessExecutionApi;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,7 +37,7 @@ public class ProcessDefinitionController {
   @Operation(
       summary = "Retrieve process definition by key",
       description = "Returns business process definition entity")
-  public UserProcessDefinitionDto getProcessDefinitionByKey(@PathVariable("key") String key) {
+  public DdmProcessDefinitionDto getProcessDefinitionByKey(@PathVariable("key") String key) {
     return processDefinitionApi.getProcessDefinitionByKey(key);
   }
 
@@ -45,7 +45,7 @@ public class ProcessDefinitionController {
   @Operation(
       summary = "Retrieve all process definitions",
       description = "Returns business process definitions list")
-  public List<UserProcessDefinitionDto> getProcessDefinitions(GetProcessDefinitionsParams params) {
+  public List<DdmProcessDefinitionDto> getProcessDefinitions(GetProcessDefinitionsParams params) {
     return processDefinitionApi.getProcessDefinitions(params);
   }
 

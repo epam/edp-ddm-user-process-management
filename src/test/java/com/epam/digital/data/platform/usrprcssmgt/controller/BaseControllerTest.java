@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
 import com.epam.digital.data.platform.usrprcssmgt.api.HistoryProcessInstanceApi;
 import com.epam.digital.data.platform.usrprcssmgt.api.ProcessDefinitionApi;
 import com.epam.digital.data.platform.usrprcssmgt.api.ProcessExecutionApi;
@@ -12,12 +13,11 @@ import com.epam.digital.data.platform.usrprcssmgt.controller.config.CustomMockMv
 import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.HistoryStatusModel;
+import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
 import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
-import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -71,18 +71,20 @@ public abstract class BaseControllerTest {
   }
 
   private void initGetProcessDefinitionsResponse() {
-    var processDefinition1 = new UserProcessDefinitionDto();
-    processDefinition1.setId("id1");
-    processDefinition1.setKey("key1");
-    processDefinition1.setName("name1");
-    processDefinition1.setSuspended(false);
-    processDefinition1.setFormKey("formKey1");
-    var processDefinition2 = new UserProcessDefinitionDto();
-    processDefinition2.setId("id2");
-    processDefinition2.setKey("key2");
-    processDefinition2.setName("name2");
-    processDefinition2.setSuspended(true);
-    processDefinition2.setFormKey("formKey2");
+    var processDefinition1 = DdmProcessDefinitionDto.builder()
+        .id("id1")
+        .key("key1")
+        .name("name1")
+        .suspended(false)
+        .formKey("formKey1")
+        .build();
+    var processDefinition2 = DdmProcessDefinitionDto.builder()
+        .id("id2")
+        .key("key2")
+        .name("name2")
+        .suspended(true)
+        .formKey("formKey2")
+        .build();
 
     lenient()
         .when(processDefinitionApi.getProcessDefinitions(new GetProcessDefinitionsParams()))
@@ -90,12 +92,13 @@ public abstract class BaseControllerTest {
   }
 
   private void initGetProcessDefinitionByIdResponse() {
-    var processDefinition = new UserProcessDefinitionDto();
-    processDefinition.setId("id1");
-    processDefinition.setKey("key1");
-    processDefinition.setName("name1");
-    processDefinition.setSuspended(false);
-    processDefinition.setFormKey("formKey1");
+    var processDefinition = DdmProcessDefinitionDto.builder()
+        .id("id1")
+        .key("key1")
+        .name("name1")
+        .suspended(false)
+        .formKey("formKey1")
+        .build();
 
     lenient()
         .when(processDefinitionApi.getProcessDefinitionByKey("processDefinitionKey"))

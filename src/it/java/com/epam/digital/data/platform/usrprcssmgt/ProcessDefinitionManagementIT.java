@@ -1,6 +1,7 @@
 package com.epam.digital.data.platform.usrprcssmgt;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -8,10 +9,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
 import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.StubRequest;
-import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
 import java.util.List;
 import java.util.Map;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
@@ -46,23 +47,16 @@ class ProcessDefinitionManagementIT extends BaseIT {
   void getProcessDefinitionByKey() {
     mockBpmsRequest(StubRequest.builder()
         .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/process-definition/key/processDefinitionKey"))
+        .path(urlPathEqualTo("/api/extended/process-definition/key/processDefinitionKey"))
         .status(200)
-        .responseBody("{ \"id\": \"id1\", \"name\":\"name1\" }")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/extended/start-form"))
-        .status(200)
-        .responseBody("{ \"id1\": \"testFormKey\" }")
+        .responseBody("{ \"id\": \"id1\", \"name\":\"name1\", \"formKey\":\"testFormKey\" }")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
     var request = get("/api/process-definition/processDefinitionKey")
         .accept(MediaType.APPLICATION_JSON_VALUE);
 
-    var result = performForObjectAsOfficer(request, UserProcessDefinitionDto.class);
+    var result = performForObjectAsOfficer(request, DdmProcessDefinitionDto.class);
 
     assertThat(result).isNotNull()
         .hasFieldOrPropertyWithValue("id", "id1")
@@ -73,29 +67,21 @@ class ProcessDefinitionManagementIT extends BaseIT {
   @Test
   void getProcessDefinitions() {
     mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/process-definition"))
-        .queryParams(Map.of("active", equalTo("false"),
-            "latestVersion", equalTo("true"),
-            "suspended", equalTo("false"),
-            "sortBy", equalTo("name"),
-            "sortOrder", equalTo("asc")))
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/process-definition"))
+        .requestBody(equalToJson("{\"active\":false,\"latestVersion\":true,"
+            + "\"suspended\":false,\"sortBy\":\"name\",\"sortOrder\":\"asc\","
+            + "\"processDefinitionId\":null,\"processDefinitionIdIn\":null}"))
         .status(200)
         .responseBody(
-            "[ { \"id\": \"id1\", \"name\":\"name1\" }, { \"id\": \"id2\", \"name\":\"name2\" }] ")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/extended/start-form"))
-        .status(200)
-        .responseBody("{ \"id1\": \"testFormKey\" }")
+            "[ { \"id\": \"id1\", \"name\":\"name1\", \"formKey\":\"testFormKey\" }, "
+                + "{ \"id\": \"id2\", \"name\":\"name2\" }] ")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
     var request = get("/api/process-definition?active=false")
         .accept(MediaType.APPLICATION_JSON_VALUE);
-    var result = performForObjectAsOfficer(request, UserProcessDefinitionDto[].class);
+    var result = performForObjectAsOfficer(request, DdmProcessDefinitionDto[].class);
 
     assertThat(result).isNotNull().hasSize(2);
     assertThat(result[0])
@@ -146,16 +132,9 @@ class ProcessDefinitionManagementIT extends BaseIT {
 
     mockBpmsRequest(StubRequest.builder()
         .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/process-definition/key/testKey"))
+        .path(urlPathEqualTo("/api/extended/process-definition/key/testKey"))
         .status(200)
-        .responseBody("{ \"id\": \"processInstanceId\", \"name\":\"name1\" }")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/extended/start-form"))
-        .status(200)
-        .responseBody("{ \"processInstanceId\": \"formKey\" }")
+        .responseBody("{\"id\":\"processInstanceId\",\"name\":\"name1\",\"formKey\":\"formKey\"}")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
     mockBpmsRequest(StubRequest.builder()
@@ -200,16 +179,9 @@ class ProcessDefinitionManagementIT extends BaseIT {
 
     mockBpmsRequest(StubRequest.builder()
         .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/process-definition/key/testKey"))
+        .path(urlPathEqualTo("/api/extended/process-definition/key/testKey"))
         .status(200)
         .responseBody("{ \"id\": \"processInstanceId\", \"name\":\"name1\" }")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/extended/start-form"))
-        .status(200)
-        .responseBody("{ \"processInstanceId\": null }")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
@@ -231,17 +203,12 @@ class ProcessDefinitionManagementIT extends BaseIT {
 
     mockBpmsRequest(StubRequest.builder()
         .method(HttpMethod.GET)
-        .path(urlEqualTo(String.format("/api/process-definition/key/%s", processDefinitionKey)))
+        .path(urlEqualTo(
+            String.format("/api/extended/process-definition/key/%s", processDefinitionKey)))
         .status(200)
-        .responseBody(String.format("{ \"id\":\"%s\", \"name\":\"name1\", \"key\":\"testKey\"  }",
+        .responseBody(String.format(
+            "{\"id\":\"%s\",\"name\":\"name1\",\"key\":\"testKey\",\"formKey\":\"formKey\"}",
             processDefinitionId))
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/api/extended/start-form"))
-        .status(200)
-        .responseBody("{ \"processDefinitionId\": \"formKey\" }")
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 

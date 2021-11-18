@@ -1,7 +1,7 @@
 package com.epam.digital.data.platform.usrprcssmgt.api;
 
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
 import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsParams;
-import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessDefinitionDto;
 import java.util.List;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
 
@@ -25,7 +25,7 @@ public interface ProcessDefinitionApi {
    * @param key process definition key
    * @return process definition entity
    */
-  UserProcessDefinitionDto getProcessDefinitionByKey(String key);
+  DdmProcessDefinitionDto getProcessDefinitionByKey(String key);
 
   /**
    * Method for getting a list of the latest version of  process definitions entities. The list must
@@ -34,7 +34,7 @@ public interface ProcessDefinitionApi {
    * @param params entity that defines an active and non-suspended process definition.
    * @return a list of process definitions.
    */
-  List<UserProcessDefinitionDto> getProcessDefinitions(GetProcessDefinitionsParams params);
+  List<DdmProcessDefinitionDto> getProcessDefinitions(GetProcessDefinitionsParams params);
 
   /**
    * Method for getting thr number of process definitions by parameters.
