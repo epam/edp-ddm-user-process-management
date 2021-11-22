@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.rest.dto.VariableValueDto;
 import org.camunda.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 /**
@@ -61,8 +62,9 @@ public class ProcessExecutionService implements ProcessExecutionApi {
 
   @Override
   public StartProcessInstanceResponse startProcessDefinitionWithForm(String key,
-      FormDataDto formDataDto) {
+      FormDataDto formDataDto, Authentication authentication) {
     log.info("Starting process instance with start form for definition with key {}", key);
+    formDataDto.setAccessToken((String) authentication.getCredentials());
 
     var processDefinition = processDefinitionRestClient.getProcessDefinitionByKey(key);
     var startFormKey = getStartFormKey(processDefinition);

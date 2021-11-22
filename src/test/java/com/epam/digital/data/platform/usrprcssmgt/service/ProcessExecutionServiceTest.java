@@ -50,6 +50,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 
 @ExtendWith(MockitoExtension.class)
 class ProcessExecutionServiceTest {
@@ -90,6 +91,7 @@ class ProcessExecutionServiceTest {
   @Test
   void startProcessDefinitionWithForm() {
     var formDataDto = Mockito.mock(FormDataDto.class);
+    var auth = Mockito.mock(Authentication.class);
 
     var processDefinitionKey = "processDefinitionKey";
     var startFormKey = "startFormKey";
@@ -114,9 +116,10 @@ class ProcessExecutionServiceTest {
     when(processInstance.isEnded()).thenReturn(true);
     when(processDefinitionRestClient.startProcessInstanceByKey(eq(processDefinitionKey),
         startProcessInstanceDtoArgumentCaptor.capture())).thenReturn(processInstance);
+    when(auth.getCredentials()).thenReturn("token");
 
     var result = processExecutionService.startProcessDefinitionWithForm(processDefinitionKey,
-        formDataDto);
+        formDataDto, auth);
 
     var expectedResponse = StartProcessInstanceResponse.builder()
         .id("processInstanceId")
@@ -136,6 +139,7 @@ class ProcessExecutionServiceTest {
   @Test
   void startProcessDefinitionWithForm_noFormKey() {
     var formDataDto = Mockito.mock(FormDataDto.class);
+    var auth = Mockito.mock(Authentication.class);
 
     var processDefinitionKey = "processDefinitionKey";
     var processDefinition = DdmProcessDefinitionDto.builder()
@@ -143,10 +147,11 @@ class ProcessExecutionServiceTest {
         .build();
     when(processDefinitionRestClient.getProcessDefinitionByKey(processDefinitionKey))
         .thenReturn(processDefinition);
+    when(auth.getCredentials()).thenReturn("token");
 
     var ex = assertThrows(StartFormException.class,
         () -> processExecutionService.startProcessDefinitionWithForm(processDefinitionKey,
-            formDataDto));
+            formDataDto, auth));
 
     assertThat(ex.getMessage()).isEqualTo("Start form does not exist!");
 
@@ -158,6 +163,7 @@ class ProcessExecutionServiceTest {
   @Test
   void startProcessDefinitionWithForm_notValidForm() {
     var formDataDto = Mockito.mock(FormDataDto.class);
+    var auth = Mockito.mock(Authentication.class);
 
     var processDefinitionKey = "processDefinitionKey";
     var startFormKey = "startFormKey";
@@ -167,6 +173,7 @@ class ProcessExecutionServiceTest {
         .build();
     when(processDefinitionRestClient.getProcessDefinitionByKey(processDefinitionKey))
         .thenReturn(processDefinition);
+    when(auth.getCredentials()).thenReturn("token");
 
     var error = ValidationErrorDto.builder()
         .code("code")
@@ -183,7 +190,7 @@ class ProcessExecutionServiceTest {
 
     var ex = assertThrows(ValidationException.class,
         () -> processExecutionService.startProcessDefinitionWithForm(processDefinitionKey,
-            formDataDto));
+            formDataDto, auth));
 
     assertThat(ex)
         .hasFieldOrPropertyWithValue("code", error.getCode())

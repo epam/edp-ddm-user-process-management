@@ -31,11 +31,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -112,9 +112,7 @@ public class ProcessDefinitionController {
       content = @Content(schema = @Schema(implementation = SystemErrorDto.class)))
   @ResponseBody
   public StartProcessInstanceResponse startProcessInstanceWithForm(@PathVariable("key") String key,
-      @RequestBody FormDataDto formDataDto,
-      @RequestHeader("x-access-token") String accessToken) {
-    formDataDto.setAccessToken(accessToken);
-    return processExecutionApi.startProcessDefinitionWithForm(key, formDataDto);
+      @RequestBody FormDataDto formDataDto, Authentication authentication) {
+    return processExecutionApi.startProcessDefinitionWithForm(key, formDataDto, authentication);
   }
 }
