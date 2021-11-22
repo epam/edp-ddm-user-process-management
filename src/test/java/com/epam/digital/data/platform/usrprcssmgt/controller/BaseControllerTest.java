@@ -142,7 +142,7 @@ public abstract class BaseControllerTest {
         .build();
     lenient()
         .when(processExecutionApi.startProcessDefinitionWithForm(eq("processDefinitionKey"),
-            any()))
+            any(), any()))
         .thenReturn(expectedResponse);
   }
 
