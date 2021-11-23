@@ -136,7 +136,7 @@
     </dependency>
     <dependency>
       <groupId>com.epam.digital.data.platform</groupId>
-      <artifactId>business-process-management-client</artifactId>
+      <artifactId>ddm-bpm-client</artifactId>
       <version>${bpm.api.version}</version>
     </dependency>
     <dependency>
