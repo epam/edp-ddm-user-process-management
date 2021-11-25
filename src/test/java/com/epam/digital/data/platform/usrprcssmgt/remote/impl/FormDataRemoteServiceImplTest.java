@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.service;
+package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.integration.ceph.exception.CephCommunicationException;
 import com.epam.digital.data.platform.integration.ceph.service.FormDataCephService;
-import com.epam.digital.data.platform.usrprcssmgt.util.CephKeyProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,10 +35,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class FormDataServiceTest {
+class FormDataRemoteServiceImplTest {
 
   @InjectMocks
-  private FormDataService formDataService;
+  private FormDataRemoteServiceImpl formDataService;
   @Mock
   private CephKeyProvider cephKeyProvider;
   @Mock

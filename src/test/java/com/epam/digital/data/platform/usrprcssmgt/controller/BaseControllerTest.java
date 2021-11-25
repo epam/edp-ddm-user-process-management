@@ -20,24 +20,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 
-import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
-import com.epam.digital.data.platform.usrprcssmgt.api.HistoryProcessInstanceApi;
-import com.epam.digital.data.platform.usrprcssmgt.api.ProcessDefinitionApi;
-import com.epam.digital.data.platform.usrprcssmgt.api.ProcessExecutionApi;
-import com.epam.digital.data.platform.usrprcssmgt.api.ProcessInstanceApi;
 import com.epam.digital.data.platform.usrprcssmgt.controller.config.CustomMockMvcConfigurer;
-import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
-import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsParams;
-import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryStatusModel;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
-import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
-import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
+import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.HistoryUserProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
+import com.epam.digital.data.platform.usrprcssmgt.service.HistoryProcessInstanceService;
+import com.epam.digital.data.platform.usrprcssmgt.service.ProcessDefinitionService;
+import com.epam.digital.data.platform.usrprcssmgt.service.ProcessInstanceService;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.camunda.bpm.engine.rest.dto.CountResultDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -55,13 +52,11 @@ public abstract class BaseControllerTest {
   private HistoryProcessInstanceController historyProcessInstanceController;
 
   @Mock
-  private ProcessDefinitionApi processDefinitionApi;
+  private ProcessDefinitionService processDefinitionService;
   @Mock
-  private ProcessExecutionApi processExecutionApi;
+  private ProcessInstanceService processInstanceService;
   @Mock
-  private ProcessInstanceApi processInstanceApi;
-  @Mock
-  private HistoryProcessInstanceApi historyProcessInstanceApi;
+  private HistoryProcessInstanceService historyProcessInstanceService;
 
   @BeforeEach
   public void setup() {
@@ -81,20 +76,19 @@ public abstract class BaseControllerTest {
     initGetCitizenProcessInstancesResponse();
 
     // init history process instance controller
-    initCountHistoryProcessInstancesResponse();
     initGetHistoryProcessInstanceByIdResponse();
     initGetHistoryProcessInstancesResponse();
   }
 
   private void initGetProcessDefinitionsResponse() {
-    var processDefinition1 = DdmProcessDefinitionDto.builder()
+    var processDefinition1 = ProcessDefinitionResponse.builder()
         .id("id1")
         .key("key1")
         .name("name1")
         .suspended(false)
         .formKey("formKey1")
         .build();
-    var processDefinition2 = DdmProcessDefinitionDto.builder()
+    var processDefinition2 = ProcessDefinitionResponse.builder()
         .id("id2")
         .key("key2")
         .name("name2")
@@ -103,12 +97,12 @@ public abstract class BaseControllerTest {
         .build();
 
     lenient()
-        .when(processDefinitionApi.getProcessDefinitions(new GetProcessDefinitionsParams()))
+        .when(processDefinitionService.getProcessDefinitions(new GetProcessDefinitionsParams()))
         .thenReturn(List.of(processDefinition1, processDefinition2));
   }
 
   private void initGetProcessDefinitionByIdResponse() {
-    var processDefinition = DdmProcessDefinitionDto.builder()
+    var processDefinition = ProcessDefinitionResponse.builder()
         .id("id1")
         .key("key1")
         .name("name1")
@@ -117,19 +111,19 @@ public abstract class BaseControllerTest {
         .build();
 
     lenient()
-        .when(processDefinitionApi.getProcessDefinitionByKey("processDefinitionKey"))
+        .when(processDefinitionService.getProcessDefinitionByKey("processDefinitionKey"))
         .thenReturn(processDefinition);
   }
 
   private void initCountProcessDefinitionsResponse() {
     lenient()
-        .when(processDefinitionApi.countProcessDefinitions(new GetProcessDefinitionsParams()))
-        .thenReturn(new CountResultDto(2L));
+        .when(processDefinitionService.countProcessDefinitions(new GetProcessDefinitionsParams()))
+        .thenReturn(new CountResponse(2L));
   }
 
   private void initStartProcessInstanceResponse() {
     lenient()
-        .when(processExecutionApi.startProcessDefinition("processDefinitionKey"))
+        .when(processDefinitionService.startProcessInstance("processDefinitionKey"))
         .thenReturn(StartProcessInstanceResponse.builder().id("processInstanceId")
             .processDefinitionId("processDefinitionId").ended(true).build());
   }
@@ -141,15 +135,15 @@ public abstract class BaseControllerTest {
         .ended(false)
         .build();
     lenient()
-        .when(processExecutionApi.startProcessDefinitionWithForm(eq("processDefinitionKey"),
+        .when(processDefinitionService.startProcessInstanceWithForm(eq("processDefinitionKey"),
             any(), any()))
         .thenReturn(expectedResponse);
   }
 
   private void initCountProcessInstancesResponse() {
     lenient()
-        .when(processInstanceApi.countProcessInstances())
-        .thenReturn(new CountResultDto(3L));
+        .when(processInstanceService.countProcessInstances())
+        .thenReturn(new CountResponse(3L));
   }
 
   private void initGetOfficerProcessInstancesResponse() {
@@ -157,7 +151,7 @@ public abstract class BaseControllerTest {
         .id("id1")
         .processDefinitionName("name1")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
-        .status(StatusModel.builder()
+        .status(GetProcessInstanceResponse.StatusModel.builder()
             .code(ProcessInstanceStatus.SUSPENDED)
             .build())
         .build();
@@ -165,12 +159,12 @@ public abstract class BaseControllerTest {
         .id("id2")
         .processDefinitionName("name2")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 1))
-        .status(StatusModel.builder()
+        .status(GetProcessInstanceResponse.StatusModel.builder()
             .code(ProcessInstanceStatus.PENDING)
             .build())
         .build();
     lenient()
-        .when(processInstanceApi.getOfficerProcessInstances(new Pageable()))
+        .when(processInstanceService.getOfficerProcessInstances(new Pageable()))
         .thenReturn(List.of(processInstance1, processInstance2));
   }
 
@@ -179,7 +173,7 @@ public abstract class BaseControllerTest {
         .id("id3")
         .processDefinitionName("name3")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
-        .status(StatusModel.builder()
+        .status(GetProcessInstanceResponse.StatusModel.builder()
             .code(ProcessInstanceStatus.CITIZEN_SUSPENDED)
             .build())
         .build();
@@ -187,66 +181,60 @@ public abstract class BaseControllerTest {
         .id("id4")
         .processDefinitionName("name4")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 1))
-        .status(StatusModel.builder()
+        .status(GetProcessInstanceResponse.StatusModel.builder()
             .code(ProcessInstanceStatus.CITIZEN_PENDING)
             .build())
         .build();
     lenient()
-        .when(processInstanceApi.getCitizenProcessInstances(new Pageable()))
+        .when(processInstanceService.getCitizenProcessInstances(new Pageable()))
         .thenReturn(List.of(processInstance1, processInstance2));
   }
 
-  private void initCountHistoryProcessInstancesResponse() {
-    lenient()
-        .when(historyProcessInstanceApi.getCountProcessInstances())
-        .thenReturn(new CountResultDto(2L));
-  }
-
   private void initGetHistoryProcessInstanceByIdResponse() {
-    var historyProcessInstance = HistoryUserProcessInstance.builder()
+    var historyProcessInstance = HistoryUserProcessInstanceResponse.builder()
         .id("historyProcessInstanceId1")
         .processDefinitionId("processDefinitionId1")
         .processDefinitionName("name3")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(HistoryStatusModel.builder()
+        .status(HistoryUserProcessInstanceResponse.StatusModel.builder()
             .code("ENDED")
             .build())
         .excerptId("excerptId1")
         .build();
 
     lenient()
-        .when(historyProcessInstanceApi
+        .when(historyProcessInstanceService
             .getHistoryProcessInstanceById("historyProcessInstanceId1"))
         .thenReturn(historyProcessInstance);
   }
 
   private void initGetHistoryProcessInstancesResponse() {
-    var historyProcessInstance1 = HistoryUserProcessInstance.builder()
+    var historyProcessInstance1 = HistoryUserProcessInstanceResponse.builder()
         .id("historyProcessInstanceId1")
         .processDefinitionId("processDefinitionId1")
         .processDefinitionName("name3")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(HistoryStatusModel.builder()
+        .status(HistoryUserProcessInstanceResponse.StatusModel.builder()
             .code("ENDED")
             .build())
         .excerptId("excerptId1")
         .build();
-    var historyProcessInstance2 = HistoryUserProcessInstance.builder()
+    var historyProcessInstance2 = HistoryUserProcessInstanceResponse.builder()
         .id("historyProcessInstanceId2")
         .processDefinitionId("processDefinitionId2")
         .processDefinitionName("name4")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(HistoryStatusModel.builder()
+        .status(HistoryUserProcessInstanceResponse.StatusModel.builder()
             .code("ENDED")
             .build())
         .excerptId(null)
         .build();
 
     lenient()
-        .when(historyProcessInstanceApi
+        .when(historyProcessInstanceService
             .getHistoryProcessInstances(new Pageable()))
         .thenReturn(List.of(historyProcessInstance1, historyProcessInstance2));
   }

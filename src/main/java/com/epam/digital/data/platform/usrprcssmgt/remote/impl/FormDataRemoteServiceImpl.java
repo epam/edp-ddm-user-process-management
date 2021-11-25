@@ -14,35 +14,26 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.service;
+package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 
 import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.integration.ceph.exception.CephCommunicationException;
 import com.epam.digital.data.platform.integration.ceph.service.FormDataCephService;
-import com.epam.digital.data.platform.usrprcssmgt.util.CephKeyProvider;
+import com.epam.digital.data.platform.usrprcssmgt.remote.FormDataRemoteService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-/**
- * Base service that is responsible for saving form data in ceph
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FormDataService {
+public class FormDataRemoteServiceImpl implements FormDataRemoteService {
 
   private final CephKeyProvider cephKeyProvider;
   private final FormDataCephService cephService;
 
-  /**
-   * Save form data in form data storage (ceph)
-   *
-   * @param processDefinitionKey key of the process definition form data is saved for
-   * @param formDataDto          the form data itself
-   * @return form data storage (ceph) key of the saved form data
-   */
+  @Override
   public String saveStartFormData(String processDefinitionKey, FormDataDto formDataDto) {
     var cephKey = generateStartFormKey(processDefinitionKey);
     putStringFormDataToCeph(cephKey, formDataDto);

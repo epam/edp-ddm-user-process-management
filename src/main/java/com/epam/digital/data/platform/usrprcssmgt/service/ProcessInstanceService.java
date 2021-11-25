@@ -16,88 +16,72 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
-import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
-import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.ProcessInstanceCountQueryDto;
-import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
-import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
-import com.epam.digital.data.platform.usrprcssmgt.api.ProcessInstanceApi;
-import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
-import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
+import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessInstanceRemoteService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.engine.rest.dto.CountResultDto;
 import org.springframework.stereotype.Service;
 
 /**
- * Base implementation of {@link ProcessInstanceApi}. A proxy to the {@link
- * ProcessInstanceRestClient} that also maps the camunda response to the needed format and localizes
- * it if needed.
+ * A service that contains methods for working with a history user process instances.
+ * <p>
+ * Implements such business functions:
+ * <li>{@link ProcessInstanceService#countProcessInstances() getting count of running process
+ * instances}</li>
+ * <li>{@link ProcessInstanceService#getOfficerProcessInstances(Pageable) Getting not completed
+ * officer processInstances}</li>
+ * <li>{@link ProcessInstanceService#getCitizenProcessInstances(Pageable) Getting not completed
+ * citizen processInstances}</li>
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProcessInstanceService implements ProcessInstanceApi {
+public class ProcessInstanceService {
 
-  private final ProcessInstanceRestClient processInstanceRestClient;
-  private final HistoryProcessInstanceRestClient historyProcessInstanceRestClient;
+  private final ProcessInstanceRemoteService processInstanceRemoteService;
 
-  private final ProcessInstanceMapper processInstanceMapper;
-
-  @Override
-  public CountResultDto countProcessInstances() {
+  /**
+   * Getting count of unfinished user process instances
+   *
+   * @return dto with count of unfinished user process instances
+   */
+  public CountResponse countProcessInstances() {
     log.info("Getting count of unfinished process instances");
 
-    var queryDto = ProcessInstanceCountQueryDto.builder()
-        .rootProcessInstances(true)
-        .build();
-    var result = processInstanceRestClient.getProcessInstancesCount(queryDto);
+    var result = processInstanceRemoteService.countProcessInstances();
 
     log.info("Count of unfinished process instances is found - {}", result.getCount());
     return result;
   }
 
-  @Override
+  /**
+   * Getting list of unfinished user process instances for officer
+   *
+   * @return list with entities of unfinished user process instances
+   */
   public List<GetProcessInstanceResponse> getOfficerProcessInstances(Pageable page) {
     log.info("Getting unfinished officer process instances. Parameters: {}", page);
 
-    var processInstances = getCamundaProcessInstances(page);
-    log.trace("Found {} running camunda process instances", processInstances.size());
-
-    var result = processInstanceMapper.toOfficerProcessInstanceResponses(processInstances);
+    var result = processInstanceRemoteService.getOfficerProcessInstances(page);
 
     log.info("Found {} unfinished officer process instances", result.size());
     return result;
   }
 
-  @Override
+  /**
+   * Getting list of unfinished user process instances for citizen
+   *
+   * @return list with entities of unfinished user process instances
+   */
   public List<GetProcessInstanceResponse> getCitizenProcessInstances(Pageable page) {
     log.info("Getting unfinished citizen process instances. Parameters: {}", page);
 
-    var processInstances = getCamundaProcessInstances(page);
-    log.trace("Found {} running camunda process instances", processInstances.size());
-
-    var result = processInstanceMapper.toCitizenProcessInstanceResponses(processInstances);
+    var result = processInstanceRemoteService.getCitizenProcessInstances(page);
 
     log.info("Found {} unfinished citizen process instances", result.size());
     return result;
-  }
-
-  private List<HistoryProcessInstanceDto> getCamundaProcessInstances(Pageable page) {
-    var processInstanceQueryDto = HistoryProcessInstanceQueryDto.builder()
-        .rootProcessInstances(true)
-        .unfinished(true)
-        .sortBy(page.getSortBy())
-        .sortOrder(page.getSortOrder())
-        .build();
-    var paginationQueryDto = PaginationQueryDto.builder()
-        .firstResult(page.getFirstResult())
-        .maxResults(page.getMaxResults())
-        .build();
-    return historyProcessInstanceRestClient.getHistoryProcessInstanceDtosByParams(
-        processInstanceQueryDto, paginationQueryDto);
   }
 }

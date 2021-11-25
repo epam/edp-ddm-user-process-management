@@ -14,25 +14,36 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.model;
+package com.epam.digital.data.platform.usrprcssmgt.model.response;
 
-import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 /**
- * The class defines a status for unfinished process instance.
+ * The class represents a data transfer object for unfinished process instance.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-public class StatusModel {
+public class GetProcessInstanceResponse {
+  private String id;
+  private String processDefinitionId;
+  private String processDefinitionName;
+  private LocalDateTime startTime;
+  private StatusModel status;
 
-  private ProcessInstanceStatus code;
-  private String title;
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class StatusModel {
+
+    private ProcessInstanceStatus code;
+    private String title;
+  }
 }

@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
-import com.epam.digital.data.platform.usrprcssmgt.model.StartProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.StubRequest;
 import java.util.List;
 import java.util.Map;

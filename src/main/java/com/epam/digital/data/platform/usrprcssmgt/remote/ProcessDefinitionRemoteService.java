@@ -14,26 +14,19 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.api;
+package com.epam.digital.data.platform.usrprcssmgt.remote;
 
-import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
-import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsParams;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
 import java.util.List;
-import org.camunda.bpm.engine.rest.dto.CountResultDto;
 
 /**
- * The {@link ProcessDefinitionApi} class represents a facade with operations on  {@link
- * org.camunda.bpm.engine.repository.ProcessDefinition} entity.
- * <p>
- * Provides such methods as:
- * <li>{@link ProcessDefinitionApi#getProcessDefinitionByKey(String)} to get a process definition
- * by key</li>
- * <li>{@link ProcessDefinitionApi#getProcessDefinitions(GetProcessDefinitionsParams)} to get a
- * list of process definitions by params that is defined in {@link GetProcessDefinitionsParams}</li>
- * <li>{@link ProcessDefinitionApi#countProcessDefinitions(GetProcessDefinitionsParams)} to get a
- * count of process definitions by params that is defined in {@link GetProcessDefinitionsParams}</li>
+ * Service for {@link ProcessDefinitionResponse} entity. Contains methods for accessing process
+ * definitions.
  */
-public interface ProcessDefinitionApi {
+public interface ProcessDefinitionRemoteService {
 
   /**
    * Method for getting the process definition entity by process definition key.
@@ -41,7 +34,7 @@ public interface ProcessDefinitionApi {
    * @param key process definition key
    * @return process definition entity
    */
-  DdmProcessDefinitionDto getProcessDefinitionByKey(String key);
+  ProcessDefinitionResponse getProcessDefinitionByKey(String key);
 
   /**
    * Method for getting a list of the latest version of  process definitions entities. The list must
@@ -50,7 +43,7 @@ public interface ProcessDefinitionApi {
    * @param params entity that defines an active and non-suspended process definition.
    * @return a list of process definitions.
    */
-  List<DdmProcessDefinitionDto> getProcessDefinitions(GetProcessDefinitionsParams params);
+  List<ProcessDefinitionResponse> getProcessDefinitions(GetProcessDefinitionsParams params);
 
   /**
    * Method for getting thr number of process definitions by parameters.
@@ -58,5 +51,22 @@ public interface ProcessDefinitionApi {
    * @param params entity that defines an active and non-suspended process definition.
    * @return an entity that defines the number of process definitions.
    */
-  CountResultDto countProcessDefinitions(GetProcessDefinitionsParams params);
+  CountResponse countProcessDefinitions(GetProcessDefinitionsParams params);
+
+  /**
+   * Starting process instance by process definition key
+   *
+   * @param key process definition key
+   * @return process instance entity
+   */
+  StartProcessInstanceResponse startProcessInstance(String key);
+
+  /**
+   * Starting process instance by process definition key with defining start form data
+   *
+   * @param key         process definition key
+   * @param formDataKey form data storage key
+   * @return process instance entity
+   */
+  StartProcessInstanceResponse startProcessInstance(String key, String formDataKey);
 }

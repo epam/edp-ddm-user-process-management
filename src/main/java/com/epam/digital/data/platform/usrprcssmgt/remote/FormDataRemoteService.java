@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.model;
+package com.epam.digital.data.platform.usrprcssmgt.remote;
 
-import lombok.Data;
-import lombok.ToString;
+import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 
 /**
- * The class defines an active and non-suspended process definition instance.
+ * Base service that is responsible for saving form data in ceph
  */
-@Data
-@ToString
-public class GetProcessDefinitionsParams {
-  private boolean active = true;
-  private boolean suspended = false;
+public interface FormDataRemoteService {
+
+  /**
+   * Save form data in form data storage
+   *
+   * @param processDefinitionKey key of the process definition form data is saved for
+   * @param formDataDto          the form data itself
+   * @return form data storage (ceph) key of the saved form data
+   */
+  String saveStartFormData(String processDefinitionKey, FormDataDto formDataDto);
 }

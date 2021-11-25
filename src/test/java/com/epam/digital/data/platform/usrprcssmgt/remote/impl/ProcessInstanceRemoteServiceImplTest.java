@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.service;
+package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -27,10 +27,11 @@ import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceS
 import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
-import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.mapper.BaseMapper;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
-import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
-import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
+import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
@@ -43,16 +44,18 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ProcessInstanceServiceTest {
+class ProcessInstanceRemoteServiceImplTest {
 
   @InjectMocks
-  private ProcessInstanceService processInstanceService;
+  private ProcessInstanceRemoteServiceImpl processInstanceRemoteService;
   @Mock
   private ProcessInstanceRestClient processInstanceRestClient;
   @Mock
   private HistoryProcessInstanceRestClient historyProcessInstanceRestClient;
   @Mock
   private MessageResolver messageResolver;
+  @Spy
+  private BaseMapper baseMapper = Mappers.getMapper(BaseMapper.class);
   @Spy
   @InjectMocks
   private ProcessInstanceMapper processInstanceMapper = Mappers.getMapper(
@@ -67,7 +70,7 @@ class ProcessInstanceServiceTest {
             .build()
     )).thenReturn(expectedCountDto);
 
-    var result = processInstanceService.countProcessInstances();
+    var result = processInstanceRemoteService.countProcessInstances();
 
     assertThat(result)
         .hasFieldOrPropertyWithValue("count", 7L);
@@ -105,7 +108,7 @@ class ProcessInstanceServiceTest {
         .thenReturn("officer pending title");
     when(messageResolver.getMessage(ProcessInstanceStatus.IN_PROGRESS))
         .thenReturn("officer in progress title");
-    var officer = processInstanceService.getOfficerProcessInstances(Pageable.builder()
+    var officer = processInstanceRemoteService.getOfficerProcessInstances(Pageable.builder()
         .firstResult(10)
         .maxResults(42)
         .sortBy("dueDate")
@@ -117,7 +120,7 @@ class ProcessInstanceServiceTest {
         .hasFieldOrPropertyWithValue("id", "id1")
         .hasFieldOrPropertyWithValue("processDefinitionName", "name1")
         .hasFieldOrPropertyWithValue("startTime", dateTime)
-        .hasFieldOrPropertyWithValue("status", StatusModel.builder()
+        .hasFieldOrPropertyWithValue("status", GetProcessInstanceResponse.StatusModel.builder()
             .code(ProcessInstanceStatus.PENDING)
             .title("officer pending title")
             .build());
@@ -125,7 +128,7 @@ class ProcessInstanceServiceTest {
         .hasFieldOrPropertyWithValue("id", "id2")
         .hasFieldOrPropertyWithValue("processDefinitionName", "name2")
         .hasFieldOrPropertyWithValue("startTime", null)
-        .hasFieldOrPropertyWithValue("status", StatusModel.builder()
+        .hasFieldOrPropertyWithValue("status", GetProcessInstanceResponse.StatusModel.builder()
             .code(ProcessInstanceStatus.IN_PROGRESS)
             .title("officer in progress title")
             .build());
@@ -134,7 +137,7 @@ class ProcessInstanceServiceTest {
         .thenReturn("citizen pending title");
     when(messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_IN_PROGRESS))
         .thenReturn("citizen in progress title");
-    var citizen = processInstanceService.getCitizenProcessInstances(Pageable.builder()
+    var citizen = processInstanceRemoteService.getCitizenProcessInstances(Pageable.builder()
         .firstResult(10)
         .maxResults(42)
         .sortBy("dueDate")
@@ -145,7 +148,7 @@ class ProcessInstanceServiceTest {
         .hasFieldOrPropertyWithValue("id", "id1")
         .hasFieldOrPropertyWithValue("processDefinitionName", "name1")
         .hasFieldOrPropertyWithValue("startTime", dateTime)
-        .hasFieldOrPropertyWithValue("status", StatusModel.builder()
+        .hasFieldOrPropertyWithValue("status", GetProcessInstanceResponse.StatusModel.builder()
             .code(ProcessInstanceStatus.CITIZEN_PENDING)
             .title("citizen pending title")
             .build());
@@ -153,7 +156,7 @@ class ProcessInstanceServiceTest {
         .hasFieldOrPropertyWithValue("id", "id2")
         .hasFieldOrPropertyWithValue("processDefinitionName", "name2")
         .hasFieldOrPropertyWithValue("startTime", null)
-        .hasFieldOrPropertyWithValue("status", StatusModel.builder()
+        .hasFieldOrPropertyWithValue("status", GetProcessInstanceResponse.StatusModel.builder()
             .code(ProcessInstanceStatus.CITIZEN_IN_PROGRESS)
             .title("citizen in progress title")
             .build());
