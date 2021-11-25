@@ -23,10 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
-import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
-import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.StubRequest;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.HistoryUserProcessInstanceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -54,26 +54,6 @@ class ProcessInstanceManagementIT extends BaseIT {
     var result = performForObjectAsOfficer(request, CountResultDto.class);
 
     assertThat(result.getCount()).isEqualTo(6L);
-  }
-
-  @Test
-  void countHistoryProcessInstances() {
-    mockBpmsRequest(StubRequest.builder()
-        .method(HttpMethod.GET)
-        .path(urlPathEqualTo("/api/history/process-instance/count"))
-        .queryParams(Map.of("finished", equalTo("true"),
-            "rootProcessInstances", equalTo("true")))
-        .status(200)
-        .responseBody("{ \"count\": 42 }")
-        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
-        .build());
-
-    var request = MockMvcRequestBuilders.get("/api/history/process-instance/count")
-        .accept(MediaType.APPLICATION_JSON_VALUE);
-
-    var result = performForObjectAsOfficer(request, CountResultDto.class);
-
-    assertThat(result.getCount()).isEqualTo(42L);
   }
 
   @Test
@@ -315,7 +295,7 @@ class ProcessInstanceManagementIT extends BaseIT {
         .queryParam("sortBy", "endTime")
         .accept(MediaType.APPLICATION_JSON_VALUE);
 
-    var result = performForObjectAsOfficer(request, HistoryUserProcessInstance[].class);
+    var result = performForObjectAsOfficer(request, HistoryUserProcessInstanceResponse[].class);
 
     assertThat(result).hasSize(1);
     assertThat(result[0])
@@ -323,7 +303,7 @@ class ProcessInstanceManagementIT extends BaseIT {
         .hasFieldOrPropertyWithValue("processDefinitionName", "processDefinition1")
         .hasFieldOrPropertyWithValue("startTime", LocalDateTime.of(2020, 12, 1, 12, 0, 0, 0))
         .hasFieldOrPropertyWithValue("endTime", LocalDateTime.of(2020, 12, 2, 12, 0, 0, 0))
-        .extracting(HistoryUserProcessInstance::getStatus)
+        .extracting(HistoryUserProcessInstanceResponse::getStatus)
         .hasFieldOrPropertyWithValue("code", null)
         .hasFieldOrPropertyWithValue("title", null);
   }
@@ -347,11 +327,11 @@ class ProcessInstanceManagementIT extends BaseIT {
     var request = MockMvcRequestBuilders.get("/api/history/process-instance/testId")
         .accept(MediaType.APPLICATION_JSON_VALUE);
 
-    var result = performForObjectAsOfficer(request, HistoryUserProcessInstance.class);
+    var result = performForObjectAsOfficer(request, HistoryUserProcessInstanceResponse.class);
 
     assertThat(result)
         .hasFieldOrPropertyWithValue("id", "testId")
-        .extracting(HistoryUserProcessInstance::getStatus)
+        .extracting(HistoryUserProcessInstanceResponse::getStatus)
         .hasFieldOrPropertyWithValue("code", "COMPLETED")
         .hasFieldOrPropertyWithValue("title", "value1");
   }
@@ -421,7 +401,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     var request = MockMvcRequestBuilders.get("/api/history/process-instance")
         .accept(MediaType.APPLICATION_JSON_VALUE);
 
-    var result = performForObjectAsOfficer(request, HistoryUserProcessInstance[].class);
+    var result = performForObjectAsOfficer(request, HistoryUserProcessInstanceResponse[].class);
 
     assertThat(result).isNotNull();
     assertThat(result[0].getExcerptId()).isEqualTo("1234");

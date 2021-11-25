@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.enums;
+package com.epam.digital.data.platform.usrprcssmgt.i18n;
 
 import com.epam.digital.data.platform.starter.localization.MessageTitle;
 import lombok.Getter;

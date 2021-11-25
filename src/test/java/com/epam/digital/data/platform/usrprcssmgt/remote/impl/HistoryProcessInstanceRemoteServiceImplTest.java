@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.service;
+package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 
-import static com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus.COMPLETED;
-import static com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus.EXTERNALLY_TERMINATED;
+import static com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus.COMPLETED;
+import static com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus.EXTERNALLY_TERMINATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.camunda.bpm.engine.history.HistoricProcessInstance.STATE_COMPLETED;
 import static org.camunda.bpm.engine.history.HistoricProcessInstance.STATE_EXTERNALLY_TERMINATED;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 
-import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
@@ -32,11 +31,10 @@ import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceS
 import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.HistoryProcessInstanceMapper;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryStatusModel;
-import com.epam.digital.data.platform.usrprcssmgt.model.Pageable;
+import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.HistoryUserProcessInstanceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.camunda.bpm.engine.rest.dto.CountResultDto;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,10 +45,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class HistoryProcessInstanceServiceTest {
+class HistoryProcessInstanceRemoteServiceImplTest {
 
   @InjectMocks
-  private HistoryProcessInstanceService historyProcessInstanceService;
+  private HistoryProcessInstanceRemoteServiceImpl historyProcessInstanceRemoteService;
   @Mock
   private HistoryProcessInstanceRestClient historyProcessInstanceRestClient;
   @Mock
@@ -59,21 +57,6 @@ class HistoryProcessInstanceServiceTest {
   @InjectMocks
   private HistoryProcessInstanceMapper historyProcessInstanceMapper = Mappers.getMapper(
       HistoryProcessInstanceMapper.class);
-
-  @Test
-  void countHistoryProcessInstances() {
-    var expectedCountDto = new CountResultDto(420L);
-
-    when(historyProcessInstanceRestClient.getProcessInstancesCount(
-        HistoryProcessInstanceCountQueryDto.builder()
-            .finished(true)
-            .rootProcessInstances(true)
-            .build())).thenReturn(expectedCountDto);
-
-    var result = historyProcessInstanceService.getCountProcessInstances();
-
-    assertThat(result.getCount()).isEqualTo(420L);
-  }
 
   @Test
   void getHistoryProcessInstances() {
@@ -106,7 +89,7 @@ class HistoryProcessInstanceServiceTest {
     var completedTitle = "completed";
     when(messageResolver.getMessage(COMPLETED)).thenReturn(completedTitle);
 
-    var result = historyProcessInstanceService.getHistoryProcessInstances(
+    var result = historyProcessInstanceRemoteService.getHistoryProcessInstances(
         Pageable.builder()
             .sortBy("name")
             .sortOrder("desk")
@@ -122,8 +105,10 @@ class HistoryProcessInstanceServiceTest {
         .hasFieldOrPropertyWithValue("startTime", startDateTime)
         .hasFieldOrPropertyWithValue("endTime", endDateTime)
         .hasFieldOrPropertyWithValue("status",
-            HistoryStatusModel.builder().code(STATE_EXTERNALLY_TERMINATED)
-                .title(externallyTerminatedTitle).build());
+            HistoryUserProcessInstanceResponse.StatusModel.builder()
+                .code(STATE_EXTERNALLY_TERMINATED)
+                .title(externallyTerminatedTitle)
+                .build());
 
     assertThat(result.get(1))
         .hasFieldOrPropertyWithValue("id", "id2")
@@ -131,7 +116,7 @@ class HistoryProcessInstanceServiceTest {
         .hasFieldOrPropertyWithValue("startTime", startDateTime)
         .hasFieldOrPropertyWithValue("endTime", endDateTime)
         .hasFieldOrPropertyWithValue("status",
-            HistoryStatusModel.builder().code(STATE_COMPLETED)
+            HistoryUserProcessInstanceResponse.StatusModel.builder().code(STATE_COMPLETED)
                 .title(completedTitle).build());
 
     assertThat(result.get(2))
@@ -140,7 +125,8 @@ class HistoryProcessInstanceServiceTest {
         .hasFieldOrPropertyWithValue("startTime", startDateTime)
         .hasFieldOrPropertyWithValue("endTime", endDateTime)
         .hasFieldOrPropertyWithValue("status",
-            HistoryStatusModel.builder().code(null).title(null).build());
+            HistoryUserProcessInstanceResponse.StatusModel.builder().code(null).title(null)
+                .build());
   }
 
   @Test
@@ -158,7 +144,7 @@ class HistoryProcessInstanceServiceTest {
     when(historyProcessInstanceRestClient.getProcessInstanceById(testId))
         .thenReturn(historyProcessInstance);
 
-    var result = historyProcessInstanceService.getHistoryProcessInstanceById(testId);
+    var result = historyProcessInstanceRemoteService.getHistoryProcessInstanceById(testId);
 
     assertThat(result)
         .hasFieldOrPropertyWithValue("id", testId)
@@ -166,7 +152,8 @@ class HistoryProcessInstanceServiceTest {
         .hasFieldOrPropertyWithValue("endTime", endDateTime)
         .hasFieldOrPropertyWithValue("excerptId", "excerptId")
         .hasFieldOrPropertyWithValue("status",
-            HistoryStatusModel.builder().code(STATE_COMPLETED).title("completed").build());
+            HistoryUserProcessInstanceResponse.StatusModel.builder().code(STATE_COMPLETED)
+                .title("completed").build());
   }
 
   private HistoryProcessInstanceDto createHistoricProcessInstanceEntity(String id,

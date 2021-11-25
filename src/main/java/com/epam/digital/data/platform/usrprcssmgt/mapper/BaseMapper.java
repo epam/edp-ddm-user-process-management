@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.model;
+package com.epam.digital.data.platform.usrprcssmgt.mapper;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
+import org.camunda.bpm.engine.rest.dto.CountResultDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
-/**
- * The class defines a status for finished process instance.
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-public class HistoryStatusModel {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface BaseMapper {
 
-  private String code;
-  private String title;
+  CountResponse toCountResponse(CountResultDto dto);
 }

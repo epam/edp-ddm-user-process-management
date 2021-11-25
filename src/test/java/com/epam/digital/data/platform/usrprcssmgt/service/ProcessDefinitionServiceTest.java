@@ -17,20 +17,31 @@
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.epam.digital.data.platform.bpms.api.dto.ProcessDefinitionQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
-import com.epam.digital.data.platform.bpms.api.dto.enums.SortOrder;
-import com.epam.digital.data.platform.bpms.client.ProcessDefinitionRestClient;
-import com.epam.digital.data.platform.usrprcssmgt.model.GetProcessDefinitionsParams;
-import java.util.Collections;
-import org.camunda.bpm.engine.rest.dto.CountResultDto;
+import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
+import com.epam.digital.data.platform.starter.errorhandling.dto.ErrorsListDto;
+import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
+import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
+import com.epam.digital.data.platform.starter.validation.dto.FormValidationResponseDto;
+import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
+import com.epam.digital.data.platform.usrprcssmgt.exception.StartFormException;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.remote.FormDataRemoteService;
+import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessDefinitionRemoteService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 
 @ExtendWith(MockitoExtension.class)
 class ProcessDefinitionServiceTest {
@@ -38,63 +49,131 @@ class ProcessDefinitionServiceTest {
   @InjectMocks
   private ProcessDefinitionService processDefinitionService;
   @Mock
-  private ProcessDefinitionRestClient processDefinitionRestClient;
+  private ProcessDefinitionRemoteService processDefinitionRemoteService;
+  @Mock
+  private FormDataRemoteService formDataRemoteService;
+  @Mock
+  private FormValidationService formValidationService;
 
   @Test
-  void countProcessDefinitions() {
-    var processDefinitionQuery = ProcessDefinitionQueryDto.builder()
-        .latestVersion(true)
-        .active(true)
-        .suspended(false)
-        .build();
-    var expectedCountDto = new CountResultDto(7L);
-    when(processDefinitionRestClient.getProcessDefinitionsCount(processDefinitionQuery))
-        .thenReturn(expectedCountDto);
-
-    var result = processDefinitionService.countProcessDefinitions(
-        new GetProcessDefinitionsParams());
-
-    assertThat(result.getCount()).isEqualTo(7L);
-  }
-
-  @Test
-  void getProcessDefinitions() {
-    var processDefinitionQuery = ProcessDefinitionQueryDto.builder()
-        .latestVersion(true)
-        .active(true)
-        .suspended(false)
-        .sortBy(ProcessDefinitionQueryDto.SortByConstants.SORT_BY_NAME)
-        .sortOrder(SortOrder.ASC.stringValue()).build();
-    var definition = DdmProcessDefinitionDto.builder()
-        .id("id")
-        .name("Awesome Definition Name")
-        .formKey("testFormKey")
-        .build();
-    when(processDefinitionRestClient.getProcessDefinitionsByParams(processDefinitionQuery))
-        .thenReturn(Collections.singletonList(definition));
-
-    var result = processDefinitionService.getProcessDefinitions(new GetProcessDefinitionsParams());
-
-    assertThat(result).hasSize(1)
-        .element(0).isSameAs(definition);
-  }
-
-  @Test
-  void getProcessDefinitionByKey() {
-    var processDefinitionId = "id";
+  void startProcessInstance() {
     var processDefinitionKey = "processDefinitionKey";
-
-    var definition = DdmProcessDefinitionDto.builder()
-        .id(processDefinitionId)
-        .key(processDefinitionKey)
-        .name("testName")
-        .formKey("testFormKey")
+    var expectedResponse = StartProcessInstanceResponse.builder()
+        .id("processInstanceId")
+        .processDefinitionId("processDefinitionId")
+        .ended(true)
         .build();
-    when(processDefinitionRestClient.getProcessDefinitionByKey(processDefinitionKey))
-        .thenReturn(definition);
 
-    var result = processDefinitionService.getProcessDefinitionByKey(processDefinitionKey);
+    when(processDefinitionRemoteService.startProcessInstance(processDefinitionKey))
+        .thenReturn(expectedResponse);
 
-    assertThat(result).isSameAs(definition);
+    var result = processDefinitionService.startProcessInstance(processDefinitionKey);
+
+    assertThat(result)
+        .isSameAs(expectedResponse);
+  }
+
+  @Test
+  void startProcessDefinitionWithForm() {
+    var formDataDto = mock(FormDataDto.class);
+
+    var processDefinitionKey = "processDefinitionKey";
+    var startFormKey = "startFormKey";
+    var processDefinition = ProcessDefinitionResponse.builder()
+        .key(processDefinitionKey)
+        .formKey(startFormKey)
+        .build();
+    when(processDefinitionRemoteService.getProcessDefinitionByKey(processDefinitionKey))
+        .thenReturn(processDefinition);
+
+    var formValidationResult = FormValidationResponseDto.builder().isValid(true).build();
+    when(formValidationService.validateForm(startFormKey, formDataDto))
+        .thenReturn(formValidationResult);
+
+    var formDataKey = "formDataKey";
+    when(formDataRemoteService.saveStartFormData(processDefinitionKey, formDataDto))
+        .thenReturn(formDataKey);
+
+    var expectedResponse = StartProcessInstanceResponse.builder()
+        .id("processInstanceId")
+        .processDefinitionId("processDefinitionId")
+        .ended(true)
+        .build();
+    when(processDefinitionRemoteService.startProcessInstance(processDefinitionKey,
+        formDataKey)).thenReturn(expectedResponse);
+
+    var authentication = mock(Authentication.class);
+    when(authentication.getCredentials()).thenReturn("token");
+
+    var result = processDefinitionService.startProcessInstanceWithForm(processDefinitionKey,
+        formDataDto, authentication);
+
+    assertThat(result).isEqualTo(expectedResponse);
+  }
+
+  @Test
+  void startProcessDefinitionWithForm_noFormKey() {
+    var formDataDto = mock(FormDataDto.class);
+
+    var processDefinitionKey = "processDefinitionKey";
+    var processDefinition = ProcessDefinitionResponse.builder()
+        .key(processDefinitionKey)
+        .build();
+    when(processDefinitionRemoteService.getProcessDefinitionByKey(processDefinitionKey))
+        .thenReturn(processDefinition);
+
+    var authentication = mock(Authentication.class);
+
+    var ex = assertThrows(StartFormException.class,
+        () -> processDefinitionService.startProcessInstanceWithForm(processDefinitionKey,
+            formDataDto, authentication));
+
+    assertThat(ex.getMessage()).isEqualTo("Start form does not exist!");
+
+    verify(formValidationService, never()).validateForm(anyString(), any(FormDataDto.class));
+    verify(formDataRemoteService, never()).saveStartFormData(anyString(), any(FormDataDto.class));
+    verify(processDefinitionRemoteService, never()).startProcessInstance(anyString(), anyString());
+  }
+
+  @Test
+  void startProcessDefinitionWithForm_notValidForm() {
+    var formDataDto = mock(FormDataDto.class);
+
+    var processDefinitionKey = "processDefinitionKey";
+    var startFormKey = "startFormKey";
+    var processDefinition = ProcessDefinitionResponse.builder()
+        .key(processDefinitionKey)
+        .formKey(startFormKey)
+        .build();
+    when(processDefinitionRemoteService.getProcessDefinitionByKey(processDefinitionKey))
+        .thenReturn(processDefinition);
+
+    var error = ValidationErrorDto.builder()
+        .code("code")
+        .message("message")
+        .traceId("traceId")
+        .details(new ErrorsListDto())
+        .build();
+    var formValidationResult = FormValidationResponseDto.builder()
+        .isValid(false)
+        .error(error)
+        .build();
+    when(formValidationService.validateForm(startFormKey, formDataDto))
+        .thenReturn(formValidationResult);
+
+    var authentication = mock(Authentication.class);
+
+    var ex = assertThrows(ValidationException.class,
+        () -> processDefinitionService.startProcessInstanceWithForm(processDefinitionKey,
+            formDataDto, authentication));
+
+    assertThat(ex)
+        .hasFieldOrPropertyWithValue("code", error.getCode())
+        .hasFieldOrPropertyWithValue("message", error.getMessage())
+        .hasFieldOrPropertyWithValue("traceId", error.getTraceId())
+        .hasFieldOrPropertyWithValue("details", error.getDetails());
+
+    verify(formDataRemoteService, never()).saveStartFormData(anyString(), any(FormDataDto.class));
+    verify(processDefinitionRemoteService, never()).startProcessInstance(anyString(), anyString());
   }
 }

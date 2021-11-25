@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.usrprcssmgt.util;
+package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 
 import org.springframework.stereotype.Component;
 

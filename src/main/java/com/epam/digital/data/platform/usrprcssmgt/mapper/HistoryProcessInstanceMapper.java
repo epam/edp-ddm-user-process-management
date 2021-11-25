@@ -19,8 +19,8 @@ package com.epam.digital.data.platform.usrprcssmgt.mapper;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
 import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceStatus;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
-import com.epam.digital.data.platform.usrprcssmgt.enums.ProcessInstanceStatus;
-import com.epam.digital.data.platform.usrprcssmgt.model.HistoryUserProcessInstance;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.HistoryUserProcessInstanceResponse;
 import java.util.List;
 import java.util.Objects;
 import org.camunda.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
@@ -44,18 +44,18 @@ public abstract class HistoryProcessInstanceMapper {
 
   /**
    * Method for converting list of camunda {@link HistoricProcessInstanceDto} entities to list of
-   * {@link HistoryUserProcessInstance} entities.
+   * {@link HistoryUserProcessInstanceResponse} entities.
    *
    * @param historicProcessInstanceDtos list of camunda historic process instances.
    * @return converted list of finished process instances.
    */
   @IterableMapping(qualifiedByName = "toHistoryProcessInstance")
-  public abstract List<HistoryUserProcessInstance> toHistoryProcessInstances(
+  public abstract List<HistoryUserProcessInstanceResponse> toHistoryProcessInstances(
       List<HistoryProcessInstanceDto> historicProcessInstanceDtos);
 
   /**
    * Method for converting camunda {@link HistoricProcessInstanceDto} entity to {@link
-   * HistoryUserProcessInstance} entity.
+   * HistoryUserProcessInstanceResponse} entity.
    *
    * @param dto camunda historic process instance.
    * @return converted finished process instance.
@@ -63,7 +63,7 @@ public abstract class HistoryProcessInstanceMapper {
   @Named("toHistoryProcessInstance")
   @Mapping(target = "status.code", source = "state")
   @Mapping(target = "status.title", source = "dto")
-  public abstract HistoryUserProcessInstance toHistoryProcessInstance(
+  public abstract HistoryUserProcessInstanceResponse toHistoryProcessInstance(
       HistoryProcessInstanceDto dto);
 
   public String toStatusTitle(HistoryProcessInstanceDto processInstance) {

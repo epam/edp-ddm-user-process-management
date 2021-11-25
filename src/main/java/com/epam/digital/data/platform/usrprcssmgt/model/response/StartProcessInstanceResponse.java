@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-package contracts.historyProcessInstance
+package com.epam.digital.data.platform.usrprcssmgt.model.response;
 
-import org.springframework.cloud.contract.spec.Contract
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-Contract.make {
-  description "should return history process-instance count"
-
-  request {
-    urlPath "/api/history/process-instance/count"
-    method GET()
-  }
-
-  response {
-    status OK()
-    headers {
-      contentType applicationJson()
-    }
-    body(
-        count: 2
-    )
-  }
+/**
+ * The class represents a data transfer object for process instance, as result of started process.
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class StartProcessInstanceResponse {
+  private String id;
+  private String processDefinitionId;
+  private boolean ended;
 }
