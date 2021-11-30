@@ -39,7 +39,7 @@ Contract.make {
             startTime            : "2020-12-01T12:00:00.000Z",
             endTime              : "2020-12-01T13:00:00.000Z",
             status               : [
-                code: "ENDED"
+                code: "COMPLETED"
             ],
             excerptId            : "excerptId1"
         ],
@@ -50,7 +50,7 @@ Contract.make {
             startTime            : "2020-12-01T12:00:00.000Z",
             endTime              : "2020-12-01T13:00:00.000Z",
             status               : [
-                code: "ENDED"
+                code: "COMPLETED"
             ],
             excerptId            : null
         ]])

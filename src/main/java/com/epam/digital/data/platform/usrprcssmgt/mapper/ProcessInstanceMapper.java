@@ -19,22 +19,20 @@ package com.epam.digital.data.platform.usrprcssmgt.mapper;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
 import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceStatus;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
-import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
+import com.epam.digital.data.platform.starter.security.SystemRole;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatusMessageTitle;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import java.util.List;
 import java.util.Objects;
 import org.camunda.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.camunda.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
-import org.mapstruct.AfterMapping;
+import org.mapstruct.Context;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
-import org.mapstruct.ValueMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,90 +47,46 @@ public abstract class ProcessInstanceMapper {
   private MessageResolver messageResolver;
 
   /**
-   * Method for converting camunda {@link HistoricProcessInstanceDto} entity to {@link
-   * GetProcessInstanceResponse} entity using officer status mapping.
+   * Method for converting BPMS {@link HistoryProcessInstanceStatus} to localized title base by
+   * role
    *
-   * @param historicProcessInstanceDto camunda historic process instance.
-   * @return converted process instance.
+   * @param processInstanceStatus the process instance status
+   * @param systemRole            the role
+   * @return localized title
    */
-  @Mapping(target = "status.code", source = "state", qualifiedByName = "toOfficesStatus")
-  @Named("toOfficerProcessInstanceResponse")
-  public abstract GetProcessInstanceResponse toOfficerProcessInstanceResponse(
-      HistoryProcessInstanceDto historicProcessInstanceDto);
+  @Named("toStatusTitle")
+  public String toStatusTitle(HistoryProcessInstanceStatus processInstanceStatus,
+      @Context SystemRole systemRole) {
+    var code = ProcessInstanceStatusMessageTitle.from(processInstanceStatus, systemRole);
 
-  /**
-   * Method for converting a list of camunda {@link HistoricProcessInstanceDto} entity to list of
-   * {@link GetProcessInstanceResponse} entity using officer status mapping. (Used {@link
-   * ProcessInstanceMapper#toOfficerProcessInstanceResponse(HistoryProcessInstanceDto)} for iterable
-   * mapping)
-   *
-   * @param historicProcessInstanceDtos camunda historic process instance.
-   * @return converted process instance.
-   */
-  @IterableMapping(qualifiedByName = "toOfficerProcessInstanceResponse")
-  public abstract List<GetProcessInstanceResponse> toOfficerProcessInstanceResponses(
-      List<HistoryProcessInstanceDto> historicProcessInstanceDtos);
-
-  /**
-   * Method for converting camunda {@link HistoricProcessInstanceDto} entity to {@link
-   * GetProcessInstanceResponse} entity using citizen status mapping.
-   *
-   * @param historicProcessInstanceDto camunda historic process instance.
-   * @return converted process instance.
-   */
-  @Mapping(target = "status.code", source = "state", qualifiedByName = "toCitizenStatus")
-  @Named("toCitizenProcessInstanceResponse")
-  public abstract GetProcessInstanceResponse toCitizenProcessInstanceResponse(
-      HistoryProcessInstanceDto historicProcessInstanceDto);
-
-  /**
-   * Method for converting a list of camunda {@link HistoricProcessInstanceDto} entity to list of
-   * {@link GetProcessInstanceResponse} entity using officer status mapping. (Used {@link
-   * ProcessInstanceMapper#toCitizenProcessInstanceResponse(HistoryProcessInstanceDto)} for iterable
-   * mapping)
-   *
-   * @param historicProcessInstanceDtos camunda historic process instance.
-   * @return converted process instance.
-   */
-  @IterableMapping(qualifiedByName = "toCitizenProcessInstanceResponse")
-  public abstract List<GetProcessInstanceResponse> toCitizenProcessInstanceResponses(
-      List<HistoryProcessInstanceDto> historicProcessInstanceDtos);
-
-  /**
-   * Method for defining status#title in {@link GetProcessInstanceResponse} after the mapping
-   *
-   * @param target target in which it's needed to define status#title
-   */
-  @AfterMapping
-  public void setStatusTitle(@MappingTarget GetProcessInstanceResponse target) {
-    var code = target.getStatus().getCode();
-    if (Objects.isNull(code)) {
-      return;
-    }
-    target.getStatus().setTitle(messageResolver.getMessage(code));
+    return Objects.isNull(code) ? null : messageResolver.getMessage(code);
   }
 
   /**
-   * Mapping BPMS {@link HistoryProcessInstanceStatus} to officer {@link ProcessInstanceStatus}
+   * Method for converting camunda {@link HistoricProcessInstanceDto} entity to {@link
+   * GetProcessInstanceResponse} entity using officer status mapping.
    *
-   * @param status BPMS status
+   * @param dto camunda historic process instance.
+   * @return converted process instance.
    */
-  @ValueMapping(source = "ACTIVE", target = "IN_PROGRESS")
-  @ValueMapping(source = "INTERNALLY_TERMINATED", target = MappingConstants.NULL)
-  @Named("toOfficesStatus")
-  public abstract ProcessInstanceStatus toOfficesStatus(HistoryProcessInstanceStatus status);
+  @Mapping(target = "status.code", source = "dto.state")
+  @Mapping(target = "status.title", source = "dto.state", qualifiedByName = "toStatusTitle")
+  @Named("toProcessInstanceResponse")
+  public abstract GetProcessInstanceResponse toProcessInstanceResponse(
+      HistoryProcessInstanceDto dto, @Context SystemRole systemRole);
 
   /**
-   * Mapping BPMS {@link HistoryProcessInstanceStatus} to citizen {@link ProcessInstanceStatus}
+   * Method for converting a list of camunda {@link HistoricProcessInstanceDto} entity to list of
+   * {@link GetProcessInstanceResponse} entity using officer status mapping. (Used {@link
+   * ProcessInstanceMapper#toProcessInstanceResponse(HistoryProcessInstanceDto, SystemRole)} for
+   * iterable mapping)
    *
-   * @param status BPMS status
+   * @param historicProcessInstanceDtos camunda historic process instance.
+   * @return converted process instance.
    */
-  @ValueMapping(source = "ACTIVE", target = "CITIZEN_IN_PROGRESS")
-  @ValueMapping(source = "INTERNALLY_TERMINATED", target = MappingConstants.NULL)
-  @ValueMapping(source = "PENDING", target = "CITIZEN_PENDING")
-  @ValueMapping(source = "SUSPENDED", target = "CITIZEN_SUSPENDED")
-  @Named("toCitizenStatus")
-  public abstract ProcessInstanceStatus toCitizenStatus(HistoryProcessInstanceStatus status);
+  @IterableMapping(qualifiedByName = "toProcessInstanceResponse")
+  public abstract List<GetProcessInstanceResponse> toProcessInstanceResponses(
+      List<HistoryProcessInstanceDto> historicProcessInstanceDtos, @Context SystemRole systemRole);
 
   /**
    * Method for converting camunda {@link ProcessInstanceDto} entity to {@link

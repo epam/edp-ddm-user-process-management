@@ -21,14 +21,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 
 import com.epam.digital.data.platform.usrprcssmgt.controller.config.CustomMockMvcConfigurer;
-import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
-import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.HistoryUserProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.service.HistoryProcessInstanceService;
 import com.epam.digital.data.platform.usrprcssmgt.service.ProcessDefinitionService;
 import com.epam.digital.data.platform.usrprcssmgt.service.ProcessInstanceService;
@@ -151,7 +152,7 @@ public abstract class BaseControllerTest {
         .id("id1")
         .processDefinitionName("name1")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
-        .status(GetProcessInstanceResponse.StatusModel.builder()
+        .status(StatusModel.builder()
             .code(ProcessInstanceStatus.SUSPENDED)
             .build())
         .build();
@@ -159,7 +160,7 @@ public abstract class BaseControllerTest {
         .id("id2")
         .processDefinitionName("name2")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 1))
-        .status(GetProcessInstanceResponse.StatusModel.builder()
+        .status(StatusModel.builder()
             .code(ProcessInstanceStatus.PENDING)
             .build())
         .build();
@@ -173,16 +174,16 @@ public abstract class BaseControllerTest {
         .id("id3")
         .processDefinitionName("name3")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
-        .status(GetProcessInstanceResponse.StatusModel.builder()
-            .code(ProcessInstanceStatus.CITIZEN_SUSPENDED)
+        .status(StatusModel.builder()
+            .code(ProcessInstanceStatus.SUSPENDED)
             .build())
         .build();
     var processInstance2 = GetProcessInstanceResponse.builder()
         .id("id4")
         .processDefinitionName("name4")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 1))
-        .status(GetProcessInstanceResponse.StatusModel.builder()
-            .code(ProcessInstanceStatus.CITIZEN_PENDING)
+        .status(StatusModel.builder()
+            .code(ProcessInstanceStatus.PENDING)
             .build())
         .build();
     lenient()
@@ -197,8 +198,8 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name3")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(HistoryUserProcessInstanceResponse.StatusModel.builder()
-            .code("ENDED")
+        .status(StatusModel.builder()
+            .code(ProcessInstanceStatus.COMPLETED)
             .build())
         .excerptId("excerptId1")
         .build();
@@ -216,8 +217,8 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name3")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(HistoryUserProcessInstanceResponse.StatusModel.builder()
-            .code("ENDED")
+        .status(StatusModel.builder()
+            .code(ProcessInstanceStatus.COMPLETED)
             .build())
         .excerptId("excerptId1")
         .build();
@@ -227,8 +228,8 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name4")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(HistoryUserProcessInstanceResponse.StatusModel.builder()
-            .code("ENDED")
+        .status(StatusModel.builder()
+            .code(ProcessInstanceStatus.COMPLETED)
             .build())
         .excerptId(null)
         .build();

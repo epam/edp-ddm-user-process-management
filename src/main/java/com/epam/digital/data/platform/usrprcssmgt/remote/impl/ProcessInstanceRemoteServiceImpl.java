@@ -22,6 +22,7 @@ import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.ProcessInstanceCountQueryDto;
 import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
+import com.epam.digital.data.platform.starter.security.SystemRole;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.BaseMapper;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
@@ -57,25 +58,15 @@ public class ProcessInstanceRemoteServiceImpl implements ProcessInstanceRemoteSe
   }
 
   @Override
-  public List<GetProcessInstanceResponse> getOfficerProcessInstances(Pageable page) {
-    log.debug("Selecting unfinished officer process instances. Parameters: {}", page);
+  public List<GetProcessInstanceResponse> getProcessInstances(Pageable page,
+      SystemRole systemRole) {
+    log.debug("Selecting unfinished {} process instances. Parameters: {}", systemRole, page);
 
     var processInstances = getCamundaProcessInstances(page);
 
-    log.debug("Found {} unfinished officer process instances. {}", processInstances.size(),
+    log.debug("Found {} unfinished {} process instances. {}", processInstances.size(), systemRole,
         processInstances);
-    return processInstanceMapper.toOfficerProcessInstanceResponses(processInstances);
-  }
-
-  @Override
-  public List<GetProcessInstanceResponse> getCitizenProcessInstances(Pageable page) {
-    log.debug("Selecting unfinished citizen process instances. Parameters: {}", page);
-
-    var processInstances = getCamundaProcessInstances(page);
-
-    log.debug("Found {} unfinished citizen process instances. {}", processInstances.size(),
-        processInstances);
-    return processInstanceMapper.toCitizenProcessInstanceResponses(processInstances);
+    return processInstanceMapper.toProcessInstanceResponses(processInstances, systemRole);
   }
 
   private List<HistoryProcessInstanceDto> getCamundaProcessInstances(Pageable page) {
