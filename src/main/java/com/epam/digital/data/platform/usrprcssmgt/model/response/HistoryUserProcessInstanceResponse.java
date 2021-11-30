@@ -16,6 +16,7 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.model.response;
 
+import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,14 +39,4 @@ public class HistoryUserProcessInstanceResponse {
   private LocalDateTime endTime;
   private StatusModel status;
   private String excerptId;
-
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class StatusModel {
-
-    private String code;
-    private String title;
-  }
 }

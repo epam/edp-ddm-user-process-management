@@ -23,9 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
-import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
-import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatusMessageTitle;
+import com.epam.digital.data.platform.usrprcssmgt.model.ProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.model.StubRequest;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.HistoryUserProcessInstanceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -107,7 +108,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result).hasSize(1);
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
-            messageResolver.getMessage(ProcessInstanceStatus.PENDING))
+            messageResolver.getMessage(ProcessInstanceStatusMessageTitle.PENDING))
         .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.PENDING);
   }
 
@@ -132,7 +133,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result).hasSize(1);
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
-            messageResolver.getMessage(ProcessInstanceStatus.SUSPENDED))
+            messageResolver.getMessage(ProcessInstanceStatusMessageTitle.SUSPENDED))
         .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.SUSPENDED);
   }
 
@@ -158,8 +159,8 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result).hasSize(1);
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
-            messageResolver.getMessage(ProcessInstanceStatus.IN_PROGRESS))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.IN_PROGRESS);
+            messageResolver.getMessage(ProcessInstanceStatusMessageTitle.IN_PROGRESS))
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.ACTIVE);
   }
 
   @Test
@@ -215,8 +216,8 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result).hasSize(1);
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
-            messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_PENDING))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_PENDING);
+            messageResolver.getMessage(ProcessInstanceStatusMessageTitle.CITIZEN_PENDING))
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.PENDING);
   }
 
   @Test
@@ -241,8 +242,8 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result).hasSize(1);
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
-            messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_SUSPENDED))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_SUSPENDED);
+            messageResolver.getMessage(ProcessInstanceStatusMessageTitle.CITIZEN_SUSPENDED))
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.SUSPENDED);
   }
 
   @Test
@@ -267,8 +268,8 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result).hasSize(1);
     assertThat(result[0].getStatus()).isNotNull()
         .hasFieldOrPropertyWithValue("title",
-            messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_IN_PROGRESS))
-        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.CITIZEN_IN_PROGRESS);
+            messageResolver.getMessage(ProcessInstanceStatusMessageTitle.CITIZEN_IN_PROGRESS))
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.ACTIVE);
   }
 
   @Test
@@ -332,7 +333,7 @@ class ProcessInstanceManagementIT extends BaseIT {
     assertThat(result)
         .hasFieldOrPropertyWithValue("id", "testId")
         .extracting(HistoryUserProcessInstanceResponse::getStatus)
-        .hasFieldOrPropertyWithValue("code", "COMPLETED")
+        .hasFieldOrPropertyWithValue("code", ProcessInstanceStatus.COMPLETED)
         .hasFieldOrPropertyWithValue("title", "value1");
   }
 

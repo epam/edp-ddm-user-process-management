@@ -27,11 +27,13 @@ import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceS
 import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
-import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatus;
+import com.epam.digital.data.platform.starter.security.SystemRole;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatusMessageTitle;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.BaseMapper;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
+import com.epam.digital.data.platform.usrprcssmgt.model.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
-import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
@@ -104,23 +106,23 @@ class ProcessInstanceRemoteServiceImplTest {
             .build()))
         .thenReturn(historyDtoSet);
 
-    when(messageResolver.getMessage(ProcessInstanceStatus.PENDING))
+    when(messageResolver.getMessage(ProcessInstanceStatusMessageTitle.PENDING))
         .thenReturn("officer pending title");
-    when(messageResolver.getMessage(ProcessInstanceStatus.IN_PROGRESS))
+    when(messageResolver.getMessage(ProcessInstanceStatusMessageTitle.IN_PROGRESS))
         .thenReturn("officer in progress title");
-    var officer = processInstanceRemoteService.getOfficerProcessInstances(Pageable.builder()
+    var officer = processInstanceRemoteService.getProcessInstances(Pageable.builder()
         .firstResult(10)
         .maxResults(42)
         .sortBy("dueDate")
         .sortOrder("asc")
-        .build());
+        .build(), SystemRole.OFFICER);
 
     assertThat(officer).hasSize(2);
     assertThat(officer.get(0))
         .hasFieldOrPropertyWithValue("id", "id1")
         .hasFieldOrPropertyWithValue("processDefinitionName", "name1")
         .hasFieldOrPropertyWithValue("startTime", dateTime)
-        .hasFieldOrPropertyWithValue("status", GetProcessInstanceResponse.StatusModel.builder()
+        .hasFieldOrPropertyWithValue("status", StatusModel.builder()
             .code(ProcessInstanceStatus.PENDING)
             .title("officer pending title")
             .build());
@@ -128,36 +130,36 @@ class ProcessInstanceRemoteServiceImplTest {
         .hasFieldOrPropertyWithValue("id", "id2")
         .hasFieldOrPropertyWithValue("processDefinitionName", "name2")
         .hasFieldOrPropertyWithValue("startTime", null)
-        .hasFieldOrPropertyWithValue("status", GetProcessInstanceResponse.StatusModel.builder()
-            .code(ProcessInstanceStatus.IN_PROGRESS)
+        .hasFieldOrPropertyWithValue("status", StatusModel.builder()
+            .code(ProcessInstanceStatus.ACTIVE)
             .title("officer in progress title")
             .build());
 
-    when(messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_PENDING))
+    when(messageResolver.getMessage(ProcessInstanceStatusMessageTitle.CITIZEN_PENDING))
         .thenReturn("citizen pending title");
-    when(messageResolver.getMessage(ProcessInstanceStatus.CITIZEN_IN_PROGRESS))
+    when(messageResolver.getMessage(ProcessInstanceStatusMessageTitle.CITIZEN_IN_PROGRESS))
         .thenReturn("citizen in progress title");
-    var citizen = processInstanceRemoteService.getCitizenProcessInstances(Pageable.builder()
+    var citizen = processInstanceRemoteService.getProcessInstances(Pageable.builder()
         .firstResult(10)
         .maxResults(42)
         .sortBy("dueDate")
         .sortOrder("asc")
-        .build());
+        .build(), SystemRole.CITIZEN);
     assertThat(citizen).hasSize(2);
     assertThat(citizen.get(0))
         .hasFieldOrPropertyWithValue("id", "id1")
         .hasFieldOrPropertyWithValue("processDefinitionName", "name1")
         .hasFieldOrPropertyWithValue("startTime", dateTime)
-        .hasFieldOrPropertyWithValue("status", GetProcessInstanceResponse.StatusModel.builder()
-            .code(ProcessInstanceStatus.CITIZEN_PENDING)
+        .hasFieldOrPropertyWithValue("status", StatusModel.builder()
+            .code(ProcessInstanceStatus.PENDING)
             .title("citizen pending title")
             .build());
     assertThat(citizen.get(1))
         .hasFieldOrPropertyWithValue("id", "id2")
         .hasFieldOrPropertyWithValue("processDefinitionName", "name2")
         .hasFieldOrPropertyWithValue("startTime", null)
-        .hasFieldOrPropertyWithValue("status", GetProcessInstanceResponse.StatusModel.builder()
-            .code(ProcessInstanceStatus.CITIZEN_IN_PROGRESS)
+        .hasFieldOrPropertyWithValue("status", StatusModel.builder()
+            .code(ProcessInstanceStatus.ACTIVE)
             .title("citizen in progress title")
             .build());
   }

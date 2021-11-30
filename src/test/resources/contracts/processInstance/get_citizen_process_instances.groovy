@@ -37,7 +37,7 @@ Contract.make {
             processDefinitionName: "name3",
             startTime            : "2020-12-01T12:00:00.000Z",
             status               : [
-                code: "CITIZEN_SUSPENDED"
+                code: "SUSPENDED"
             ]
         ],
         [
@@ -45,7 +45,7 @@ Contract.make {
             processDefinitionName: "name4",
             startTime            : "2020-12-01T12:01:00.000Z",
             status               : [
-                code: "CITIZEN_PENDING"
+                code: "PENDING"
             ]
         ]
     ])

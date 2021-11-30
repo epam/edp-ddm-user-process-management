@@ -16,9 +16,10 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.remote;
 
-import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
+import com.epam.digital.data.platform.starter.security.SystemRole;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
 import java.util.List;
 
 /**
@@ -36,19 +37,11 @@ public interface ProcessInstanceRemoteService {
 
   /**
    * Method for getting a list of unfinished process instances. The list must be sorted by start
-   * time and in ascending order. Performed by a user with the role of an officer.
+   * time and in ascending order.
    *
-   * @param page defines the pagination parameters to shrink result lust
+   * @param page       defines the pagination parameters to shrink result lust
+   * @param systemRole current user role
    * @return a list of unfinished process instances.
    */
-  List<GetProcessInstanceResponse> getOfficerProcessInstances(Pageable page);
-
-  /**
-   * Method for getting a list of unfinished process instances. The list must be sorted by start
-   * time and in ascending order. Performed by a user with the citizen role.
-   *
-   * @param page defines the pagination parameters to shrink result lust
-   * @return a list of unfinished process instances.
-   */
-  List<GetProcessInstanceResponse> getCitizenProcessInstances(Pageable page);
+  List<GetProcessInstanceResponse> getProcessInstances(Pageable page, SystemRole systemRole);
 }

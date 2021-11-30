@@ -16,6 +16,7 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
+import com.epam.digital.data.platform.starter.security.SystemRole;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
@@ -65,7 +66,7 @@ public class ProcessInstanceService {
   public List<GetProcessInstanceResponse> getOfficerProcessInstances(Pageable page) {
     log.info("Getting unfinished officer process instances. Parameters: {}", page);
 
-    var result = processInstanceRemoteService.getOfficerProcessInstances(page);
+    var result = processInstanceRemoteService.getProcessInstances(page, SystemRole.OFFICER);
 
     log.info("Found {} unfinished officer process instances", result.size());
     return result;
@@ -79,7 +80,7 @@ public class ProcessInstanceService {
   public List<GetProcessInstanceResponse> getCitizenProcessInstances(Pageable page) {
     log.info("Getting unfinished citizen process instances. Parameters: {}", page);
 
-    var result = processInstanceRemoteService.getCitizenProcessInstances(page);
+    var result = processInstanceRemoteService.getProcessInstances(page, SystemRole.CITIZEN);
 
     log.info("Found {} unfinished citizen process instances", result.size());
     return result;
