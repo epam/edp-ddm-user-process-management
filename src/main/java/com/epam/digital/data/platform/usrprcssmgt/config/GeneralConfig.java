@@ -16,7 +16,6 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.config;
 
-import com.epam.digital.data.platform.integration.ceph.config.CephConfig;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
@@ -34,7 +33,6 @@ import org.springframework.context.annotation.Import;
  * should create, set up and return an instance of a bean.
  */
 @Configuration
-@Import(CephConfig.class)
 @EnableAspectJAutoProxy
 public class GeneralConfig {
 

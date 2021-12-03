@@ -20,21 +20,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ErrorsListDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
 import com.epam.digital.data.platform.starter.validation.dto.FormValidationResponseDto;
 import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
+import com.epam.digital.data.platform.storage.form.dto.FormDataDto;
+import com.epam.digital.data.platform.storage.form.service.FormDataStorageService;
 import com.epam.digital.data.platform.usrprcssmgt.exception.StartFormException;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.remote.FormDataRemoteService;
 import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessDefinitionRemoteService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +52,7 @@ class ProcessDefinitionServiceTest {
   @Mock
   private ProcessDefinitionRemoteService processDefinitionRemoteService;
   @Mock
-  private FormDataRemoteService formDataRemoteService;
+  private FormDataStorageService formDataStorageService;
   @Mock
   private FormValidationService formValidationService;
 
@@ -91,7 +92,7 @@ class ProcessDefinitionServiceTest {
         .thenReturn(formValidationResult);
 
     var formDataKey = "formDataKey";
-    when(formDataRemoteService.saveStartFormData(processDefinitionKey, formDataDto))
+    when(formDataStorageService.putStartFormData(eq(processDefinitionKey), anyString(), eq(formDataDto)))
         .thenReturn(formDataKey);
 
     var expectedResponse = StartProcessInstanceResponse.builder()
@@ -131,7 +132,7 @@ class ProcessDefinitionServiceTest {
     assertThat(ex.getMessage()).isEqualTo("Start form does not exist!");
 
     verify(formValidationService, never()).validateForm(anyString(), any(FormDataDto.class));
-    verify(formDataRemoteService, never()).saveStartFormData(anyString(), any(FormDataDto.class));
+    verify(formDataStorageService, never()).putFormData(anyString(), anyString(), any(FormDataDto.class));
     verify(processDefinitionRemoteService, never()).startProcessInstance(anyString(), anyString());
   }
 
@@ -173,7 +174,7 @@ class ProcessDefinitionServiceTest {
         .hasFieldOrPropertyWithValue("traceId", error.getTraceId())
         .hasFieldOrPropertyWithValue("details", error.getDetails());
 
-    verify(formDataRemoteService, never()).saveStartFormData(anyString(), any(FormDataDto.class));
+    verify(formDataStorageService, never()).putStartFormData(anyString(), anyString(), any(FormDataDto.class));
     verify(processDefinitionRemoteService, never()).startProcessInstance(anyString(), anyString());
   }
 }

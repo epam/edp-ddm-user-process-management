@@ -16,9 +16,9 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.controller;
 
-import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.security.annotation.PreAuthorizeAnySystemRole;
+import com.epam.digital.data.platform.storage.form.dto.FormDataDto;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
