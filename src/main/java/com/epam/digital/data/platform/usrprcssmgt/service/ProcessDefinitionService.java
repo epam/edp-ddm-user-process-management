@@ -16,18 +16,19 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
-import com.epam.digital.data.platform.integration.ceph.dto.FormDataDto;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
 import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
+import com.epam.digital.data.platform.storage.form.dto.FormDataDto;
+import com.epam.digital.data.platform.storage.form.service.FormDataStorageService;
 import com.epam.digital.data.platform.usrprcssmgt.exception.StartFormException;
-import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
-import com.epam.digital.data.platform.usrprcssmgt.remote.FormDataRemoteService;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessDefinitionRemoteService;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -50,7 +51,7 @@ import org.springframework.stereotype.Service;
 public class ProcessDefinitionService {
 
   private final ProcessDefinitionRemoteService processDefinitionRemoteService;
-  private final FormDataRemoteService formDataRemoteService;
+  private final FormDataStorageService formDataStorageService;
   private final FormValidationService formValidationService;
 
   /**
@@ -129,7 +130,6 @@ public class ProcessDefinitionService {
    * @param key         the process definition key
    * @param formDataDto the start form data dto
    * @return started process instance entity
-   *
    * @throws StartFormException  if start form hasn't defined in business process
    * @throws ValidationException if form data hasn't pass the validation
    */
@@ -146,7 +146,8 @@ public class ProcessDefinitionService {
     log.trace("Process definition form data is valid. Id - {}", processDefinition.getId());
 
     formDataDto.setAccessToken((String) authentication.getCredentials());
-    var formDataKey = formDataRemoteService.saveStartFormData(key, formDataDto);
+    var uuid = UUID.randomUUID().toString();
+    var formDataKey = formDataStorageService.putStartFormData(key, uuid, formDataDto);
     log.trace("Process definition form data was saved. Id - {}", processDefinition.getId());
 
     var result = processDefinitionRemoteService.startProcessInstance(key, formDataKey);
