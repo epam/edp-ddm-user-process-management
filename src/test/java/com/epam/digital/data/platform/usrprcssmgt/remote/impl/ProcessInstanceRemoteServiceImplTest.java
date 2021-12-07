@@ -19,20 +19,19 @@ package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
-import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessInstanceCountQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessInstanceDto;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.ProcessInstanceCountQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceStatus;
-import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
+import com.epam.digital.data.platform.bpms.api.dto.enums.DdmProcessInstanceStatus;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
 import com.epam.digital.data.platform.starter.security.SystemRole;
 import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatusMessageTitle;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.BaseMapper;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
-import com.epam.digital.data.platform.usrprcssmgt.model.ProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
+import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,8 +52,6 @@ class ProcessInstanceRemoteServiceImplTest {
   @Mock
   private ProcessInstanceRestClient processInstanceRestClient;
   @Mock
-  private HistoryProcessInstanceRestClient historyProcessInstanceRestClient;
-  @Mock
   private MessageResolver messageResolver;
   @Spy
   private BaseMapper baseMapper = Mappers.getMapper(BaseMapper.class);
@@ -67,7 +64,7 @@ class ProcessInstanceRemoteServiceImplTest {
   void countProcessInstances() {
     var expectedCountDto = new CountResultDto(7L);
     when(processInstanceRestClient.getProcessInstancesCount(
-        ProcessInstanceCountQueryDto.builder()
+        DdmProcessInstanceCountQueryDto.builder()
             .rootProcessInstances(true)
             .build()
     )).thenReturn(expectedCountDto);
@@ -82,29 +79,30 @@ class ProcessInstanceRemoteServiceImplTest {
   void getProcessInstances() {
     var dateTime = LocalDateTime.of(2020, 12, 1, 12, 0);
 
-    var historyProcessInstance1 = new HistoryProcessInstanceDto();
-    historyProcessInstance1.setId("id1");
-    historyProcessInstance1.setProcessDefinitionName("name1");
-    historyProcessInstance1.setStartTime(dateTime);
-    historyProcessInstance1.setState(HistoryProcessInstanceStatus.PENDING);
-    var historyProcessInstance2 = new HistoryProcessInstanceDto();
-    historyProcessInstance2.setId("id2");
-    historyProcessInstance2.setProcessDefinitionName("name2");
-    historyProcessInstance2.setStartTime(null);
-    historyProcessInstance2.setState(HistoryProcessInstanceStatus.ACTIVE);
-    var historyDtoSet = List.of(historyProcessInstance1, historyProcessInstance2);
+    var processInstance1 = DdmProcessInstanceDto.builder()
+        .id("id1")
+        .processDefinitionName("name1")
+        .startTime(dateTime)
+        .state(DdmProcessInstanceStatus.PENDING)
+        .build();
+    var processInstance2 = DdmProcessInstanceDto.builder()
+        .id("id2")
+        .processDefinitionName("name2")
+        .startTime(null)
+        .state(DdmProcessInstanceStatus.ACTIVE)
+        .build();
+    var dtoSet = List.of(processInstance1, processInstance2);
 
-    when(historyProcessInstanceRestClient.getHistoryProcessInstanceDtosByParams(
-        HistoryProcessInstanceQueryDto.builder()
+    when(processInstanceRestClient.getProcessInstances(
+        DdmProcessInstanceQueryDto.builder()
             .rootProcessInstances(true)
-            .unfinished(true)
             .sortBy("dueDate")
             .sortOrder("asc")
             .build(), PaginationQueryDto.builder()
             .firstResult(10)
             .maxResults(42)
             .build()))
-        .thenReturn(historyDtoSet);
+        .thenReturn(dtoSet);
 
     when(messageResolver.getMessage(ProcessInstanceStatusMessageTitle.PENDING))
         .thenReturn("officer pending title");
@@ -123,7 +121,7 @@ class ProcessInstanceRemoteServiceImplTest {
         .hasFieldOrPropertyWithValue("processDefinitionName", "name1")
         .hasFieldOrPropertyWithValue("startTime", dateTime)
         .hasFieldOrPropertyWithValue("status", StatusModel.builder()
-            .code(ProcessInstanceStatus.PENDING)
+            .code(UserProcessInstanceStatus.PENDING)
             .title("officer pending title")
             .build());
     assertThat(officer.get(1))
@@ -131,7 +129,7 @@ class ProcessInstanceRemoteServiceImplTest {
         .hasFieldOrPropertyWithValue("processDefinitionName", "name2")
         .hasFieldOrPropertyWithValue("startTime", null)
         .hasFieldOrPropertyWithValue("status", StatusModel.builder()
-            .code(ProcessInstanceStatus.ACTIVE)
+            .code(UserProcessInstanceStatus.ACTIVE)
             .title("officer in progress title")
             .build());
 
@@ -151,7 +149,7 @@ class ProcessInstanceRemoteServiceImplTest {
         .hasFieldOrPropertyWithValue("processDefinitionName", "name1")
         .hasFieldOrPropertyWithValue("startTime", dateTime)
         .hasFieldOrPropertyWithValue("status", StatusModel.builder()
-            .code(ProcessInstanceStatus.PENDING)
+            .code(UserProcessInstanceStatus.PENDING)
             .title("citizen pending title")
             .build());
     assertThat(citizen.get(1))
@@ -159,7 +157,7 @@ class ProcessInstanceRemoteServiceImplTest {
         .hasFieldOrPropertyWithValue("processDefinitionName", "name2")
         .hasFieldOrPropertyWithValue("startTime", null)
         .hasFieldOrPropertyWithValue("status", StatusModel.builder()
-            .code(ProcessInstanceStatus.ACTIVE)
+            .code(UserProcessInstanceStatus.ACTIVE)
             .title("citizen in progress title")
             .build());
   }

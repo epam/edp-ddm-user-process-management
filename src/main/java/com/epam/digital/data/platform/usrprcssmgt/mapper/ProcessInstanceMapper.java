@@ -16,8 +16,8 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.mapper;
 
-import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
-import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceStatus;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessInstanceDto;
+import com.epam.digital.data.platform.bpms.api.dto.enums.DdmProcessInstanceStatus;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
 import com.epam.digital.data.platform.starter.security.SystemRole;
 import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatusMessageTitle;
@@ -25,7 +25,6 @@ import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInsta
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import java.util.List;
 import java.util.Objects;
-import org.camunda.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.camunda.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.mapstruct.Context;
 import org.mapstruct.IterableMapping;
@@ -37,8 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The class represents a mapper for process instance entity. The interface contains a methods for
- * converting camunda historic process instance. Abstract methods are implemented using the
- * MapStruct.
+ * converting camunda process instance. Abstract methods are implemented using the MapStruct.
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class ProcessInstanceMapper {
@@ -47,15 +45,14 @@ public abstract class ProcessInstanceMapper {
   private MessageResolver messageResolver;
 
   /**
-   * Method for converting BPMS {@link HistoryProcessInstanceStatus} to localized title base by
-   * role
+   * Method for converting BPMS {@link DdmProcessInstanceStatus} to localized title base by role
    *
    * @param processInstanceStatus the process instance status
    * @param systemRole            the role
    * @return localized title
    */
   @Named("toStatusTitle")
-  public String toStatusTitle(HistoryProcessInstanceStatus processInstanceStatus,
+  public String toStatusTitle(DdmProcessInstanceStatus processInstanceStatus,
       @Context SystemRole systemRole) {
     var code = ProcessInstanceStatusMessageTitle.from(processInstanceStatus, systemRole);
 
@@ -63,30 +60,30 @@ public abstract class ProcessInstanceMapper {
   }
 
   /**
-   * Method for converting camunda {@link HistoricProcessInstanceDto} entity to {@link
+   * Method for converting {@link DdmProcessInstanceDto} entity to {@link
    * GetProcessInstanceResponse} entity using officer status mapping.
    *
-   * @param dto camunda historic process instance.
+   * @param dto process instance dto
    * @return converted process instance.
    */
   @Mapping(target = "status.code", source = "dto.state")
   @Mapping(target = "status.title", source = "dto.state", qualifiedByName = "toStatusTitle")
   @Named("toProcessInstanceResponse")
   public abstract GetProcessInstanceResponse toProcessInstanceResponse(
-      HistoryProcessInstanceDto dto, @Context SystemRole systemRole);
+      DdmProcessInstanceDto dto, @Context SystemRole systemRole);
 
   /**
-   * Method for converting a list of camunda {@link HistoricProcessInstanceDto} entity to list of
-   * {@link GetProcessInstanceResponse} entity using officer status mapping. (Used {@link
-   * ProcessInstanceMapper#toProcessInstanceResponse(HistoryProcessInstanceDto, SystemRole)} for
+   * Method for converting a list of {@link DdmProcessInstanceDto} entity to list of {@link
+   * GetProcessInstanceResponse} entity using officer status mapping. (Used {@link
+   * ProcessInstanceMapper#toProcessInstanceResponse(DdmProcessInstanceDto, SystemRole)} for
    * iterable mapping)
    *
-   * @param historicProcessInstanceDtos camunda historic process instance.
+   * @param processInstanceDtos process instance dto list
    * @return converted process instance.
    */
   @IterableMapping(qualifiedByName = "toProcessInstanceResponse")
   public abstract List<GetProcessInstanceResponse> toProcessInstanceResponses(
-      List<HistoryProcessInstanceDto> historicProcessInstanceDtos, @Context SystemRole systemRole);
+      List<DdmProcessInstanceDto> processInstanceDtos, @Context SystemRole systemRole);
 
   /**
    * Method for converting camunda {@link ProcessInstanceDto} entity to {@link

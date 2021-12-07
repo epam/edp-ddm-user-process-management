@@ -19,7 +19,7 @@ package com.epam.digital.data.platform.usrprcssmgt.mapper;
 import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
 import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceStatus;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
-import com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatusMessageTitle;
+import com.epam.digital.data.platform.usrprcssmgt.i18n.HistoryProcessInstanceStatusMessageTitle;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.HistoryUserProcessInstanceResponse;
 import java.util.List;
 import java.util.Objects;
@@ -69,7 +69,8 @@ public abstract class HistoryProcessInstanceMapper {
   public String toStatusTitle(HistoryProcessInstanceDto processInstance) {
     var state = processInstance.getState();
     if (HistoryProcessInstanceStatus.EXTERNALLY_TERMINATED.equals(state)) {
-      return messageResolver.getMessage(ProcessInstanceStatusMessageTitle.EXTERNALLY_TERMINATED);
+      return messageResolver.getMessage(
+          HistoryProcessInstanceStatusMessageTitle.EXTERNALLY_TERMINATED);
     }
 
     if (!HistoryProcessInstanceStatus.COMPLETED.equals(state)) {
@@ -77,6 +78,6 @@ public abstract class HistoryProcessInstanceMapper {
     }
 
     return Objects.requireNonNullElseGet(processInstance.getProcessCompletionResult(),
-        () -> messageResolver.getMessage(ProcessInstanceStatusMessageTitle.COMPLETED));
+        () -> messageResolver.getMessage(HistoryProcessInstanceStatusMessageTitle.COMPLETED));
   }
 }

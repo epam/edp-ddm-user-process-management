@@ -16,8 +16,8 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 
-import static com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatusMessageTitle.COMPLETED;
-import static com.epam.digital.data.platform.usrprcssmgt.i18n.ProcessInstanceStatusMessageTitle.EXTERNALLY_TERMINATED;
+import static com.epam.digital.data.platform.usrprcssmgt.i18n.HistoryProcessInstanceStatusMessageTitle.COMPLETED;
+import static com.epam.digital.data.platform.usrprcssmgt.i18n.HistoryProcessInstanceStatusMessageTitle.EXTERNALLY_TERMINATED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
@@ -29,7 +29,7 @@ import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceS
 import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.localization.MessageResolver;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.HistoryProcessInstanceMapper;
-import com.epam.digital.data.platform.usrprcssmgt.model.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
 import java.time.LocalDateTime;
@@ -105,7 +105,7 @@ class HistoryProcessInstanceRemoteServiceImplTest {
         .hasFieldOrPropertyWithValue("endTime", endDateTime)
         .hasFieldOrPropertyWithValue("status",
             StatusModel.builder()
-                .code(ProcessInstanceStatus.EXTERNALLY_TERMINATED)
+                .code(UserProcessInstanceStatus.EXTERNALLY_TERMINATED)
                 .title(externallyTerminatedTitle)
                 .build());
 
@@ -115,7 +115,7 @@ class HistoryProcessInstanceRemoteServiceImplTest {
         .hasFieldOrPropertyWithValue("startTime", startDateTime)
         .hasFieldOrPropertyWithValue("endTime", endDateTime)
         .hasFieldOrPropertyWithValue("status",
-            StatusModel.builder().code(ProcessInstanceStatus.COMPLETED)
+            StatusModel.builder().code(UserProcessInstanceStatus.COMPLETED)
                 .title(completedTitle).build());
 
     assertThat(result.get(2))
@@ -151,7 +151,7 @@ class HistoryProcessInstanceRemoteServiceImplTest {
         .hasFieldOrPropertyWithValue("endTime", endDateTime)
         .hasFieldOrPropertyWithValue("excerptId", "excerptId")
         .hasFieldOrPropertyWithValue("status",
-            StatusModel.builder().code(ProcessInstanceStatus.COMPLETED)
+            StatusModel.builder().code(UserProcessInstanceStatus.COMPLETED)
                 .title("completed").build());
   }
 
