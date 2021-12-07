@@ -16,17 +16,17 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 
-import com.epam.digital.data.platform.bpms.api.dto.ProcessDefinitionQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.enums.SortOrder;
 import com.epam.digital.data.platform.bpms.client.ProcessDefinitionRestClient;
 import com.epam.digital.data.platform.dataaccessor.sysvar.StartFormCephKeyVariable;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.BaseMapper;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessDefinitionMapper;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
-import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessDefinitionRemoteService;
 import java.util.List;
 import java.util.Map;
@@ -61,11 +61,11 @@ public class ProcessDefinitionRemoteServiceImpl implements ProcessDefinitionRemo
   public List<ProcessDefinitionResponse> getProcessDefinitions(GetProcessDefinitionsParams params) {
     log.debug("Selecting list of process definitions form bpms. Params: {}", params);
 
-    var queryDto = ProcessDefinitionQueryDto.builder()
+    var queryDto = DdmProcessDefinitionQueryDto.builder()
         .latestVersion(true)
         .active(params.isActive())
         .suspended(params.isSuspended())
-        .sortBy(ProcessDefinitionQueryDto.SortByConstants.SORT_BY_NAME)
+        .sortBy(DdmProcessDefinitionQueryDto.SortByConstants.SORT_BY_NAME)
         .sortOrder(SortOrder.ASC.stringValue())
         .build();
     var dtos = processDefinitionRestClient.getProcessDefinitionsByParams(queryDto);
@@ -78,7 +78,7 @@ public class ProcessDefinitionRemoteServiceImpl implements ProcessDefinitionRemo
   public CountResponse countProcessDefinitions(GetProcessDefinitionsParams params) {
     log.debug("Selecting count of process definitions form bpms. Params: {}", params);
 
-    var queryDto = ProcessDefinitionQueryDto.builder()
+    var queryDto = DdmProcessDefinitionQueryDto.builder()
         .latestVersion(true)
         .active(params.isActive())
         .suspended(params.isSuspended())

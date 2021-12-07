@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 
 import com.epam.digital.data.platform.usrprcssmgt.controller.config.CustomMockMvcConfigurer;
-import com.epam.digital.data.platform.usrprcssmgt.model.ProcessInstanceStatus;
+import com.epam.digital.data.platform.usrprcssmgt.model.UserProcessInstanceStatus;
 import com.epam.digital.data.platform.usrprcssmgt.model.StatusModel;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
@@ -153,7 +153,7 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name1")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.SUSPENDED)
+            .code(UserProcessInstanceStatus.SUSPENDED)
             .build())
         .build();
     var processInstance2 = GetProcessInstanceResponse.builder()
@@ -161,7 +161,7 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name2")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 1))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.PENDING)
+            .code(UserProcessInstanceStatus.PENDING)
             .build())
         .build();
     lenient()
@@ -175,7 +175,7 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name3")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.SUSPENDED)
+            .code(UserProcessInstanceStatus.SUSPENDED)
             .build())
         .build();
     var processInstance2 = GetProcessInstanceResponse.builder()
@@ -183,7 +183,7 @@ public abstract class BaseControllerTest {
         .processDefinitionName("name4")
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 1))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.PENDING)
+            .code(UserProcessInstanceStatus.PENDING)
             .build())
         .build();
     lenient()
@@ -199,7 +199,7 @@ public abstract class BaseControllerTest {
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.COMPLETED)
+            .code(UserProcessInstanceStatus.COMPLETED)
             .build())
         .excerptId("excerptId1")
         .build();
@@ -218,7 +218,7 @@ public abstract class BaseControllerTest {
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.COMPLETED)
+            .code(UserProcessInstanceStatus.COMPLETED)
             .build())
         .excerptId("excerptId1")
         .build();
@@ -229,7 +229,7 @@ public abstract class BaseControllerTest {
         .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
         .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
         .status(StatusModel.builder()
-            .code(ProcessInstanceStatus.COMPLETED)
+            .code(UserProcessInstanceStatus.COMPLETED)
             .build())
         .excerptId(null)
         .build();

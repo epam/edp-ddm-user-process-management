@@ -16,12 +16,11 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.i18n;
 
-import com.epam.digital.data.platform.bpms.api.dto.enums.HistoryProcessInstanceStatus;
+import com.epam.digital.data.platform.bpms.api.dto.enums.DdmProcessInstanceStatus;
 import com.epam.digital.data.platform.starter.localization.MessageTitle;
 import com.epam.digital.data.platform.starter.security.SystemRole;
 import java.util.Objects;
 import java.util.stream.Stream;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -31,31 +30,27 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-@AllArgsConstructor
 public enum ProcessInstanceStatusMessageTitle implements MessageTitle {
-  PENDING(HistoryProcessInstanceStatus.PENDING, SystemRole.OFFICER,
+  PENDING(DdmProcessInstanceStatus.PENDING, SystemRole.OFFICER,
       "process-instance.status.title.pending"),
-  SUSPENDED(HistoryProcessInstanceStatus.SUSPENDED, SystemRole.OFFICER,
+  SUSPENDED(DdmProcessInstanceStatus.SUSPENDED, SystemRole.OFFICER,
       "process-instance.status.title.suspended"),
-  IN_PROGRESS(HistoryProcessInstanceStatus.ACTIVE, SystemRole.OFFICER,
+  IN_PROGRESS(DdmProcessInstanceStatus.ACTIVE, SystemRole.OFFICER,
       "process-instance.status.title.in-progress"),
-  COMPLETED(HistoryProcessInstanceStatus.COMPLETED, "process-instance.status.title.completed"),
-  EXTERNALLY_TERMINATED(HistoryProcessInstanceStatus.EXTERNALLY_TERMINATED,
-      "process-instance.status.title.externally-terminated"),
 
-  CITIZEN_PENDING(HistoryProcessInstanceStatus.PENDING, SystemRole.CITIZEN,
+  CITIZEN_PENDING(DdmProcessInstanceStatus.PENDING, SystemRole.CITIZEN,
       "process-instance.status.title.citizen-pending"),
-  CITIZEN_SUSPENDED(HistoryProcessInstanceStatus.SUSPENDED, SystemRole.CITIZEN,
+  CITIZEN_SUSPENDED(DdmProcessInstanceStatus.SUSPENDED, SystemRole.CITIZEN,
       "process-instance.status.title.citizen-suspended"),
-  CITIZEN_IN_PROGRESS(HistoryProcessInstanceStatus.ACTIVE, SystemRole.CITIZEN,
+  CITIZEN_IN_PROGRESS(DdmProcessInstanceStatus.ACTIVE, SystemRole.CITIZEN,
       "process-instance.status.title.citizen-in-progress");
 
-  private final HistoryProcessInstanceStatus processInstanceStatus;
-  private SystemRole systemRole;
+  private final DdmProcessInstanceStatus processInstanceStatus;
+  private final SystemRole systemRole;
   private final String titleKey;
 
   public static ProcessInstanceStatusMessageTitle from(
-      HistoryProcessInstanceStatus processInstanceStatus, SystemRole systemRole) {
+      DdmProcessInstanceStatus processInstanceStatus, SystemRole systemRole) {
 
     return Stream.of(values())
         .filter(message -> message.getProcessInstanceStatus().equals(processInstanceStatus))

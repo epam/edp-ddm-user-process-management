@@ -16,11 +16,10 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.remote.impl;
 
-import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceDto;
-import com.epam.digital.data.platform.bpms.api.dto.HistoryProcessInstanceQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessInstanceCountQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessInstanceDto;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessInstanceQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.PaginationQueryDto;
-import com.epam.digital.data.platform.bpms.api.dto.ProcessInstanceCountQueryDto;
-import com.epam.digital.data.platform.bpms.client.HistoryProcessInstanceRestClient;
 import com.epam.digital.data.platform.bpms.client.ProcessInstanceRestClient;
 import com.epam.digital.data.platform.starter.security.SystemRole;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.BaseMapper;
@@ -40,7 +39,6 @@ import org.springframework.stereotype.Service;
 public class ProcessInstanceRemoteServiceImpl implements ProcessInstanceRemoteService {
 
   private final ProcessInstanceRestClient processInstanceRestClient;
-  private final HistoryProcessInstanceRestClient historyProcessInstanceRestClient;
 
   private final BaseMapper baseMapper;
   private final ProcessInstanceMapper processInstanceMapper;
@@ -49,7 +47,7 @@ public class ProcessInstanceRemoteServiceImpl implements ProcessInstanceRemoteSe
   public CountResponse countProcessInstances() {
     log.debug("Selecting count of unfinished process instances from bpms");
 
-    var queryDto = ProcessInstanceCountQueryDto.builder()
+    var queryDto = DdmProcessInstanceCountQueryDto.builder()
         .rootProcessInstances(true)
         .build();
     var result = processInstanceRestClient.getProcessInstancesCount(queryDto);
@@ -69,10 +67,9 @@ public class ProcessInstanceRemoteServiceImpl implements ProcessInstanceRemoteSe
     return processInstanceMapper.toProcessInstanceResponses(processInstances, systemRole);
   }
 
-  private List<HistoryProcessInstanceDto> getCamundaProcessInstances(Pageable page) {
-    var processInstanceQueryDto = HistoryProcessInstanceQueryDto.builder()
+  private List<DdmProcessInstanceDto> getCamundaProcessInstances(Pageable page) {
+    var queryDto = DdmProcessInstanceQueryDto.builder()
         .rootProcessInstances(true)
-        .unfinished(true)
         .sortBy(page.getSortBy())
         .sortOrder(page.getSortOrder())
         .build();
@@ -80,7 +77,6 @@ public class ProcessInstanceRemoteServiceImpl implements ProcessInstanceRemoteSe
         .firstResult(page.getFirstResult())
         .maxResults(page.getMaxResults())
         .build();
-    return historyProcessInstanceRestClient.getHistoryProcessInstanceDtosByParams(
-        processInstanceQueryDto, paginationQueryDto);
+    return processInstanceRestClient.getProcessInstances(queryDto, paginationQueryDto);
   }
 }

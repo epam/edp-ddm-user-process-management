@@ -16,17 +16,11 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class StatusModel {
-
-  private UserProcessInstanceStatus code;
-  private String title;
+public enum UserProcessInstanceStatus {
+  ACTIVE,
+  PENDING,
+  SUSPENDED,
+  COMPLETED,
+  EXTERNALLY_TERMINATED,
+  INTERNALLY_TERMINATED
 }

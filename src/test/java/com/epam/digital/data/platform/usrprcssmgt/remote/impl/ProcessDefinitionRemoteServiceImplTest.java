@@ -22,15 +22,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
-import com.epam.digital.data.platform.bpms.api.dto.ProcessDefinitionQueryDto;
+import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionQueryDto;
 import com.epam.digital.data.platform.bpms.api.dto.enums.SortOrder;
 import com.epam.digital.data.platform.bpms.client.ProcessDefinitionRestClient;
 import com.epam.digital.data.platform.dataaccessor.sysvar.StartFormCephKeyVariable;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.BaseMapper;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessDefinitionMapper;
 import com.epam.digital.data.platform.usrprcssmgt.mapper.ProcessInstanceMapper;
-import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import java.util.Collections;
 import org.camunda.bpm.engine.rest.dto.CountResultDto;
 import org.camunda.bpm.engine.rest.dto.VariableValueDto;
@@ -68,7 +68,7 @@ class ProcessDefinitionRemoteServiceImplTest {
 
   @Test
   void countProcessDefinitions() {
-    var processDefinitionQuery = ProcessDefinitionQueryDto.builder()
+    var processDefinitionQuery = DdmProcessDefinitionQueryDto.builder()
         .latestVersion(true)
         .active(true)
         .suspended(false)
@@ -85,11 +85,11 @@ class ProcessDefinitionRemoteServiceImplTest {
 
   @Test
   void getProcessDefinitions() {
-    var processDefinitionQuery = ProcessDefinitionQueryDto.builder()
+    var processDefinitionQuery = DdmProcessDefinitionQueryDto.builder()
         .latestVersion(true)
         .active(true)
         .suspended(false)
-        .sortBy(ProcessDefinitionQueryDto.SortByConstants.SORT_BY_NAME)
+        .sortBy(DdmProcessDefinitionQueryDto.SortByConstants.SORT_BY_NAME)
         .sortOrder(SortOrder.ASC.stringValue()).build();
     var definition = DdmProcessDefinitionDto.builder()
         .id("id")
