@@ -22,7 +22,7 @@
     <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
 
     <bpm.api.version>1.5.5-SNAPSHOT</bpm.api.version>
-    <ddm-form-data-storage.version>1.5.0-SNAPSHOT</ddm-form-data-storage.version>
+    <ddm-form-data-storage.version>1.5.2-SNAPSHOT</ddm-form-data-storage.version>
     <ddm-starter-security.version>1.5.0-SNAPSHOT</ddm-starter-security.version>
     <ddm-starter-logger.version>1.5.0-SNAPSHOT</ddm-starter-logger.version>
     <ddm-starter-error-handler.version>1.4.0</ddm-starter-error-handler.version>

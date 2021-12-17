@@ -8,6 +8,13 @@ ceph:
 form-management-provider:
   url: http://localhost:8083
 
+s3:
+  config:
+    client:
+      protocol: http
+    options:
+      pathStyleAccess: true
+
 token:
   name: x-access-token
   value-with-role-officer: "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGWU1uVjA0bFdCTjhYc2k\
