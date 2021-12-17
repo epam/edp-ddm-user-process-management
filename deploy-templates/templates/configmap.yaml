@@ -6,6 +6,7 @@ data:
   application.yml: |-
     bpms.url: http://bpms:8080
     ceph.http-endpoint: {{ .Values.ceph.host }}
+    s3: {{ .Values.s3 | toYaml | nindent6 }}
     form-management-provider.url: http://form-management-provider:3001
     server.max-http-header-size: 32KB
     {{- if eq .Values.deployProfile "dev" }}
