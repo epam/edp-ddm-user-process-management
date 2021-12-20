@@ -24,11 +24,12 @@
     <bpm.api.version>1.5.5-SNAPSHOT</bpm.api.version>
     <ddm-form-data-storage.version>1.5.2-SNAPSHOT</ddm-form-data-storage.version>
     <ddm-starter-security.version>1.5.0-SNAPSHOT</ddm-starter-security.version>
-    <ddm-starter-logger.version>1.5.0-SNAPSHOT</ddm-starter-logger.version>
+    <ddm-starter-logger.version>1.5.1-SNAPSHOT</ddm-starter-logger.version>
     <ddm-starter-error-handler.version>1.4.0</ddm-starter-error-handler.version>
     <ddm-starter-actuator.version>1.4.0</ddm-starter-actuator.version>
     <ddm-starter-localization.version>1.2.0</ddm-starter-localization.version>
     <ddm-starter-validation.version>1.5.1-SNAPSHOT</ddm-starter-validation.version>
+    <log4j.version>2.16.0</log4j.version>
 
     <!-- This property is set by jacoco and used in the surefire config
 			Set it to empty to avoid JVM startup error related to "@{argLine}" when run without jacoco -->
@@ -41,8 +42,22 @@
     </sonar.coverage.exclusions>
   </properties>
 
-  <dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+	  </dependencies>
+  </dependencyManagement>
 
+  <dependencies>
     <dependency>
       <groupId>com.epam.digital.data.platform</groupId>
       <artifactId>ddm-starter-validation</artifactId>
