@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.epam.digital.data.platform</groupId>
     <artifactId>low-code-platform-parent</artifactId>
-    <version>1.2.0</version>
+    <version>1.5.0-SNAPSHOT</version>
     <relativePath/>
   </parent>
 
@@ -21,15 +21,15 @@
   <properties>
     <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
 
-    <bpm.api.version>1.5.5-SNAPSHOT</bpm.api.version>
+    <bpm.api.version>1.5.7-SNAPSHOT</bpm.api.version>
     <ddm-form-data-storage.version>1.5.2-SNAPSHOT</ddm-form-data-storage.version>
-    <ddm-starter-security.version>1.5.0-SNAPSHOT</ddm-starter-security.version>
-    <ddm-starter-logger.version>1.5.1-SNAPSHOT</ddm-starter-logger.version>
-    <ddm-starter-error-handler.version>1.4.0</ddm-starter-error-handler.version>
-    <ddm-starter-actuator.version>1.4.0</ddm-starter-actuator.version>
-    <ddm-starter-localization.version>1.2.0</ddm-starter-localization.version>
-    <ddm-starter-validation.version>1.5.1-SNAPSHOT</ddm-starter-validation.version>
-    <log4j.version>2.16.0</log4j.version>
+    <ddm-starter-security.version>1.5.1-SNAPSHOT</ddm-starter-security.version>
+    <ddm-starter-logger.version>1.5.2-SNAPSHOT</ddm-starter-logger.version>
+    <ddm-starter-error-handler.version>1.5.1-SNAPSHOT</ddm-starter-error-handler.version>
+    <ddm-starter-actuator.version>1.5.1-SNAPSHOT</ddm-starter-actuator.version>
+    <ddm-starter-localization.version>1.5.1-SNAPSHOT</ddm-starter-localization.version>
+    <ddm-starter-validation.version>1.5.2-SNAPSHOT</ddm-starter-validation.version>
+    <log4j.version>2.17.0</log4j.version>
 
     <!-- This property is set by jacoco and used in the surefire config
 			Set it to empty to avoid JVM startup error related to "@{argLine}" when run without jacoco -->
@@ -115,7 +115,13 @@
 
     <dependency>
       <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-kubernetes-config</artifactId>
+      <artifactId>spring-cloud-starter-kubernetes-client-config</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
