@@ -5,8 +5,7 @@
 * The main purpose of the user process management service is to provide REST API low-code platform
   to interact with process instances/definitions;
 * access to the list of user business processes based on roles and permissions;
-* initiation of business processes;
-* access to the history business processes.
+* initiation of business processes.
 
 ### Usage
 
