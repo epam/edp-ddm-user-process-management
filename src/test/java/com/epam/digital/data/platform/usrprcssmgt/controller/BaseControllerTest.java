@@ -27,10 +27,8 @@ import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefini
 import com.epam.digital.data.platform.usrprcssmgt.model.request.Pageable;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.GetProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.model.response.HistoryUserProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
-import com.epam.digital.data.platform.usrprcssmgt.service.HistoryProcessInstanceService;
 import com.epam.digital.data.platform.usrprcssmgt.service.ProcessDefinitionService;
 import com.epam.digital.data.platform.usrprcssmgt.service.ProcessInstanceService;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
@@ -49,20 +47,16 @@ public abstract class BaseControllerTest {
   private ProcessDefinitionController processDefinitionController;
   @InjectMocks
   private ProcessInstanceController processInstanceController;
-  @InjectMocks
-  private HistoryProcessInstanceController historyProcessInstanceController;
 
   @Mock
   private ProcessDefinitionService processDefinitionService;
   @Mock
   private ProcessInstanceService processInstanceService;
-  @Mock
-  private HistoryProcessInstanceService historyProcessInstanceService;
 
   @BeforeEach
   public void setup() {
     RestAssuredMockMvc.standaloneSetup(processDefinitionController, processInstanceController,
-        historyProcessInstanceController, new CustomMockMvcConfigurer());
+        new CustomMockMvcConfigurer());
 
     // init process definitions controller
     initGetProcessDefinitionsResponse();
@@ -75,10 +69,6 @@ public abstract class BaseControllerTest {
     initCountProcessInstancesResponse();
     initGetOfficerProcessInstancesResponse();
     initGetCitizenProcessInstancesResponse();
-
-    // init history process instance controller
-    initGetHistoryProcessInstanceByIdResponse();
-    initGetHistoryProcessInstancesResponse();
   }
 
   private void initGetProcessDefinitionsResponse() {
@@ -189,54 +179,5 @@ public abstract class BaseControllerTest {
     lenient()
         .when(processInstanceService.getCitizenProcessInstances(new Pageable()))
         .thenReturn(List.of(processInstance1, processInstance2));
-  }
-
-  private void initGetHistoryProcessInstanceByIdResponse() {
-    var historyProcessInstance = HistoryUserProcessInstanceResponse.builder()
-        .id("historyProcessInstanceId1")
-        .processDefinitionId("processDefinitionId1")
-        .processDefinitionName("name3")
-        .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
-        .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(StatusModel.builder()
-            .code(UserProcessInstanceStatus.COMPLETED)
-            .build())
-        .excerptId("excerptId1")
-        .build();
-
-    lenient()
-        .when(historyProcessInstanceService
-            .getHistoryProcessInstanceById("historyProcessInstanceId1"))
-        .thenReturn(historyProcessInstance);
-  }
-
-  private void initGetHistoryProcessInstancesResponse() {
-    var historyProcessInstance1 = HistoryUserProcessInstanceResponse.builder()
-        .id("historyProcessInstanceId1")
-        .processDefinitionId("processDefinitionId1")
-        .processDefinitionName("name3")
-        .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
-        .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(StatusModel.builder()
-            .code(UserProcessInstanceStatus.COMPLETED)
-            .build())
-        .excerptId("excerptId1")
-        .build();
-    var historyProcessInstance2 = HistoryUserProcessInstanceResponse.builder()
-        .id("historyProcessInstanceId2")
-        .processDefinitionId("processDefinitionId2")
-        .processDefinitionName("name4")
-        .startTime(LocalDateTime.of(2020, 12, 1, 12, 0))
-        .endTime(LocalDateTime.of(2020, 12, 1, 13, 0))
-        .status(StatusModel.builder()
-            .code(UserProcessInstanceStatus.COMPLETED)
-            .build())
-        .excerptId(null)
-        .build();
-
-    lenient()
-        .when(historyProcessInstanceService
-            .getHistoryProcessInstances(new Pageable()))
-        .thenReturn(List.of(historyProcessInstance1, historyProcessInstance2));
   }
 }
