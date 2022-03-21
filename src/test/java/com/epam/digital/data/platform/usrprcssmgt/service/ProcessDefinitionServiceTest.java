@@ -65,10 +65,16 @@ class ProcessDefinitionServiceTest {
         .ended(true)
         .build();
 
-    when(processDefinitionRemoteService.startProcessInstance(processDefinitionKey))
-        .thenReturn(expectedResponse);
 
-    var result = processDefinitionService.startProcessInstance(processDefinitionKey);
+    var formDataDto = mock(FormDataDto.class);
+    var formDataKey = "formDataKey";
+    var authentication = mock(Authentication.class);
+    when(authentication.getCredentials()).thenReturn("token");
+    when(formDataStorageService.putStartFormData(eq(processDefinitionKey), anyString(), any()))
+            .thenReturn(formDataKey);
+    when(processDefinitionRemoteService.startProcessInstance(processDefinitionKey, formDataKey))
+            .thenReturn(expectedResponse);
+    var result = processDefinitionService.startProcessInstance(processDefinitionKey, authentication);
 
     assertThat(result)
         .isSameAs(expectedResponse);

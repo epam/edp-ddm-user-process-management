@@ -114,7 +114,7 @@ public abstract class BaseControllerTest {
 
   private void initStartProcessInstanceResponse() {
     lenient()
-        .when(processDefinitionService.startProcessInstance("processDefinitionKey"))
+        .when(processDefinitionService.startProcessInstance(eq("processDefinitionKey"), any()))
         .thenReturn(StartProcessInstanceResponse.builder().id("processInstanceId")
             .processDefinitionId("processDefinitionId").ended(true).build());
   }

@@ -106,11 +106,13 @@ public class ProcessDefinitionService {
    * @param key the process definition key
    * @return started process instance entity
    */
-  public StartProcessInstanceResponse startProcessInstance(String key) {
+  public StartProcessInstanceResponse startProcessInstance(String key, Authentication authentication) {
     log.info("Starting process instance for definition with key {}", key);
-
-    var result = processDefinitionRemoteService.startProcessInstance(key);
-
+    FormDataDto form = new FormDataDto();
+    form.setAccessToken((String) authentication.getCredentials());
+    String uuid = UUID.randomUUID().toString();
+    var formDataKey = formDataStorageService.putStartFormData(key, uuid, form);
+    var result = processDefinitionRemoteService.startProcessInstance(key, formDataKey);
     log.info("Process instance for process definition {} started. Process instance id {}", key,
         result.getId());
     return result;
