@@ -125,11 +125,13 @@ class ProcessDefinitionManagementIT extends BaseIT {
             processInstanceId, processDefinitionId))
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
-
+    var payload = "{\"data\":null,"
+            + "\"x-access-token\":\"" + tokenConfig.getValueWithRoleOfficer() + "\"}";
+    mockPutStartFormCephKey(payload);
     var request = post(String.format("/api/process-definition/%s/start", processDefinitionKey))
         .accept(MediaType.APPLICATION_JSON_VALUE)
         .contentType("application/json")
-        .content("{}");
+        .content(payload);
     var result = performForObjectAsOfficer(request, StartProcessInstanceResponse.class);
 
     var expectedResponse = StartProcessInstanceResponse.builder()

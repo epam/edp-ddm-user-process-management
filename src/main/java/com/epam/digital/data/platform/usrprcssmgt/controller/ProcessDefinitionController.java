@@ -88,8 +88,8 @@ public class ProcessDefinitionController {
       responseCode = "500",
       content = @Content(schema = @Schema(implementation = SystemErrorDto.class)))
   @ResponseBody
-  public StartProcessInstanceResponse startProcessInstance(@PathVariable("key") String key) {
-    return processDefinitionService.startProcessInstance(key);
+  public StartProcessInstanceResponse startProcessInstance(@PathVariable("key") String key, Authentication authentication) {
+    return processDefinitionService.startProcessInstance(key, authentication);
   }
 
   @PostMapping("/{key}/start-with-form")
