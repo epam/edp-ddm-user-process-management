@@ -3,7 +3,7 @@ server:
   servlet:
     context-path: /user-process-management
 
-form-management-provider:
+form-submission-validation:
   url: http://localhost:8084
 
 bpms:

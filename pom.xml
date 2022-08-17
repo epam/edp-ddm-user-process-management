@@ -13,7 +13,7 @@
   </parent>
 
   <artifactId>user-process-management</artifactId>
-  <version>1.7.0</version>
+  <version>1.8.0</version>
 
   <name>user-process-management</name>
   <description>User Process Management Backend Service</description>
@@ -28,7 +28,7 @@
     <ddm-starter-error-handler.version>1.6.0.1</ddm-starter-error-handler.version>
     <ddm-starter-actuator.version>1.6.0.1</ddm-starter-actuator.version>
     <ddm-starter-localization.version>1.6.0.1</ddm-starter-localization.version>
-    <ddm-starter-validation.version>1.6.0.1</ddm-starter-validation.version>
+    <ddm-starter-validation.version>1.6.0.3</ddm-starter-validation.version>
     <log4j.version>2.17.0</log4j.version>
 
     <!-- This property is set by jacoco and used in the surefire config
