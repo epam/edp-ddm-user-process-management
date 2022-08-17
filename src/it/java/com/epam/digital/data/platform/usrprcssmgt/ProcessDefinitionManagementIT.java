@@ -233,7 +233,7 @@ class ProcessDefinitionManagementIT extends BaseIT {
     var errorValidationResponse = "{\"details\": ["
         + "{\"message\":\"Field name is required\",\"context\":{\"key\":\"name\",\"value\":\"123\"}},"
         + "{\"message\":\"Field createdDate is required\",\"context\":{\"key\":\"createdDate\",\"value\":\"321\"}}]}";
-    mockValidationFormData(400, errorValidationResponse);
+    mockValidationFormData(422, errorValidationResponse);
 
     mockGetForm("{\"components\":[{\"key\":\"name\",\"type\":\"textfield\"},"
         + "{\"key\":\"createdDate\",\"type\":\"day\"}]}");

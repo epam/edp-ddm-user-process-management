@@ -204,8 +204,7 @@ public abstract class BaseIT {
   public void mockValidationFormData(int status, String respBody) {
     mockRequest(formProviderServer, StubRequest.builder()
         .method(HttpMethod.POST)
-        .path(urlPathEqualTo("/formKey/submission"))
-        .queryParams(Map.of("dryrun", equalTo("1")))
+        .path(urlPathEqualTo("/api/form-submissions/formKey/validate"))
         .requestBody(equalTo("{\"data\":{\"formData\":\"testData\"}}"))
         .status(status)
         .responseBody(respBody)

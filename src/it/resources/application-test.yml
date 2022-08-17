@@ -5,7 +5,7 @@ ceph:
   access-key: access-key
   secret-key: secret-key
   bucket: bucket
-form-management-provider:
+form-submission-validation:
   url: http://localhost:8083
 
 s3:
