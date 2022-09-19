@@ -1,6 +1,19 @@
 global:
   disableRequestsLimits: false
+  registry:
+    userProcessManagement:
+      istio:
+        sidecar:
+          enabled: true
+          resources:
+            limits: {}
+            requests: {}
+      container:
+        resources: {}
+        envVars:
+          JAVA_OPTS: "-Xms512m -Xmx512m"
 
+podAnnotations: {}
 image:
   name: user-process-management
   version: latest
@@ -58,5 +71,3 @@ redis:
   secretName: redis-auth
 
 deployProfile: prod
-
-javaOpts: "-Xms512m -Xmx512m"
