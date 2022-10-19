@@ -78,7 +78,7 @@ public abstract class BaseIT {
   protected MessageResolver messageResolver;
   @Autowired
   protected ObjectMapper objectMapper;
-  @Value("${ceph.bucket}")
+  @Value("${storage.backend.ceph.bucket}")
   private String cephBucketName;
 
   @BeforeAll
