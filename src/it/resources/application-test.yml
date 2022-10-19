@@ -1,10 +1,20 @@
 bpms:
   url: http://localhost:8800
-ceph:
-  http-endpoint: http://localhost:8100
-  access-key: access-key
-  secret-key: secret-key
-  bucket: bucket
+
+storage:
+  form-data:
+    type: redis
+  backend:
+    redis:
+      sentinel:
+        master: mymaster
+        nodes: 127.0.0.1:26379
+    ceph:
+      http-endpoint: http://localhost:8100
+      access-key: access-key
+      secret-key: secret-key
+      bucket: bucket
+
 form-submission-validation:
   url: http://localhost:8083
 

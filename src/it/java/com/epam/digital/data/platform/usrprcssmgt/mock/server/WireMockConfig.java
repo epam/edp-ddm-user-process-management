@@ -21,6 +21,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import java.net.MalformedURLException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,7 +37,7 @@ public class WireMockConfig {
 
   @Qualifier("ceph")
   @Bean(destroyMethod = "stop")
-  public WireMockServer cephWireMock(@Value("${ceph.http-endpoint}") String urlStr)
+  public WireMockServer cephWireMock(@Value("${storage.backend.ceph.http-endpoint}") String urlStr)
       throws MalformedURLException {
     return WireMockUtil.createAndStartMockServerForUrl(urlStr);
   }
