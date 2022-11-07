@@ -230,9 +230,9 @@ class ProcessDefinitionManagementIT extends BaseIT {
         .responseHeaders(Map.of("Content-Type", List.of("application/json")))
         .build());
 
-    var errorValidationResponse = "{\"details\": ["
-        + "{\"message\":\"Field name is required\",\"context\":{\"key\":\"name\",\"value\":\"123\"}},"
-        + "{\"message\":\"Field createdDate is required\",\"context\":{\"key\":\"createdDate\",\"value\":\"321\"}}]}";
+    var errorValidationResponse = "{\"details\":{\"errors\":[{\"value\": \"123\",\"field\": "
+        + "\"name\",\"message\": \"Field name is required\"},{\"value\": \"321\",\"field\": "
+        + "\"createdDate\",\"message\": \"Field createdDate is required\"}]}}";
     mockValidationFormData(422, errorValidationResponse);
 
     mockGetForm("{\"components\":[{\"key\":\"name\",\"type\":\"textfield\"},"
