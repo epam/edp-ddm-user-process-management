@@ -28,6 +28,7 @@ import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessIns
 import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessDefinitionRemoteService;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,13 +110,7 @@ public class ProcessDefinitionService {
   public StartProcessInstanceResponse startProcessInstance(String key, Authentication authentication) {
     log.info("Starting process instance for definition with key {}", key);
     FormDataDto form = new FormDataDto();
-    form.setAccessToken((String) authentication.getCredentials());
-    String uuid = UUID.randomUUID().toString();
-    var formDataKey = formDataStorageService.putStartFormData(key, uuid, form);
-    var result = processDefinitionRemoteService.startProcessInstance(key, formDataKey);
-    log.info("Process instance for process definition {} started. Process instance id {}", key,
-        result.getId());
-    return result;
+    return startProcess(key, form, authentication);
   }
 
   /**
@@ -147,16 +142,26 @@ public class ProcessDefinitionService {
     validateFormData(startFormKey, formDataDto);
     log.trace("Process definition form data is valid. Id - {}", processDefinition.getId());
 
+    return startProcess(key, formDataDto, authentication);
+  }
+
+  private StartProcessInstanceResponse startProcess(String key, FormDataDto formDataDto,
+      Authentication authentication) {
     formDataDto.setAccessToken((String) authentication.getCredentials());
     var uuid = UUID.randomUUID().toString();
     var formDataKey = formDataStorageService.putStartFormData(key, uuid, formDataDto);
-    log.trace("Process definition form data was saved. Id - {}", processDefinition.getId());
+    log.trace("Process definition form data was saved. Process definition key - {}", key);
 
-    var result = processDefinitionRemoteService.startProcessInstance(key, formDataKey);
+    try {
+      var result = processDefinitionRemoteService.startProcessInstance(key, formDataKey);
 
-    log.info("Starting process instance of process definition {} with id - {} finished. "
-        + "Process instance id {}", key, processDefinition.getId(), result.getId());
-    return result;
+      log.info("Starting process instance of process definition {} finished. "
+          + "Process instance id {}", key, result.getId());
+      return result;
+    } catch (Exception exception) {
+      formDataStorageService.delete(Set.of(formDataKey));
+      throw exception;
+    }
   }
 
   private String getStartFormKey(ProcessDefinitionResponse processDefinition) {

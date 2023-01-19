@@ -37,6 +37,7 @@ import com.epam.digital.data.platform.usrprcssmgt.exception.StartFormException;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessDefinitionRemoteService;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -66,7 +67,6 @@ class ProcessDefinitionServiceTest {
         .build();
 
 
-    var formDataDto = mock(FormDataDto.class);
     var formDataKey = "formDataKey";
     var authentication = mock(Authentication.class);
     when(authentication.getCredentials()).thenReturn("token");
@@ -76,8 +76,8 @@ class ProcessDefinitionServiceTest {
             .thenReturn(expectedResponse);
     var result = processDefinitionService.startProcessInstance(processDefinitionKey, authentication);
 
-    assertThat(result)
-        .isSameAs(expectedResponse);
+    assertThat(result).isSameAs(expectedResponse);
+    verify(formDataStorageService, never()).delete(any());
   }
 
   @Test
@@ -116,6 +116,7 @@ class ProcessDefinitionServiceTest {
         formDataDto, authentication);
 
     assertThat(result).isEqualTo(expectedResponse);
+    verify(formDataStorageService, never()).delete(any());
   }
 
   @Test
@@ -139,6 +140,7 @@ class ProcessDefinitionServiceTest {
 
     verify(formValidationService, never()).validateForm(anyString(), any(FormDataDto.class));
     verify(formDataStorageService, never()).putFormData(anyString(), anyString(), any(FormDataDto.class));
+    verify(formDataStorageService, never()).delete(any());
     verify(processDefinitionRemoteService, never()).startProcessInstance(anyString(), anyString());
   }
 
@@ -181,6 +183,59 @@ class ProcessDefinitionServiceTest {
         .hasFieldOrPropertyWithValue("details", error.getDetails());
 
     verify(formDataStorageService, never()).putStartFormData(anyString(), anyString(), any(FormDataDto.class));
+    verify(formDataStorageService, never()).delete(any());
     verify(processDefinitionRemoteService, never()).startProcessInstance(anyString(), anyString());
+  }
+
+  @Test
+  void shouldDeleteStartFormDataWhenErrorOccursWhenStartingProcessDefinitionWithForm() {
+    var formDataDto = mock(FormDataDto.class);
+    var authentication = mock(Authentication.class);
+    var processDefinitionKey = "processDefinitionKey";
+    var startFormKey = "startFormKey";
+    var processDefinition = ProcessDefinitionResponse.builder()
+        .key(processDefinitionKey)
+        .formKey(startFormKey)
+        .build();
+    var formDataKey = "formDataKey";
+    var formValidationResult = FormValidationResponseDto.builder().isValid(true).build();
+
+    when(processDefinitionRemoteService.getProcessDefinitionByKey(processDefinitionKey))
+        .thenReturn(processDefinition);
+    when(formValidationService.validateForm(startFormKey, formDataDto))
+        .thenReturn(formValidationResult);
+    when(authentication.getCredentials()).thenReturn("token");
+    when(formDataStorageService.putStartFormData(eq(processDefinitionKey), anyString(), eq(formDataDto)))
+        .thenReturn(formDataKey);
+    when(processDefinitionRemoteService.startProcessInstance(processDefinitionKey,
+        formDataKey)).thenThrow(ValidationException.class);
+
+    assertThrows(ValidationException.class,
+        () -> processDefinitionService.startProcessInstanceWithForm(processDefinitionKey,
+            formDataDto, authentication));
+    verify(processDefinitionRemoteService).getProcessDefinitionByKey(processDefinitionKey);
+    verify(formValidationService).validateForm(startFormKey, formDataDto);
+    verify(formDataStorageService).putStartFormData(eq(processDefinitionKey), anyString(), any(FormDataDto.class));
+    verify(processDefinitionRemoteService).startProcessInstance(processDefinitionKey, formDataKey);
+    verify(formDataStorageService).delete(Set.of(formDataKey));
+  }
+
+  @Test
+  void shouldDeleteAccessTokenFormDataWhenErrorOccursWhenStartingProcessDefinition() {
+    var processDefinitionKey = "processDefinitionKey";
+    var formDataKey = "formDataKey";
+    var authentication = mock(Authentication.class);
+
+    when(authentication.getCredentials()).thenReturn("token");
+    when(formDataStorageService.putStartFormData(eq(processDefinitionKey), anyString(), any()))
+        .thenReturn(formDataKey);
+    when(processDefinitionRemoteService.startProcessInstance(processDefinitionKey,
+        formDataKey)).thenThrow(ValidationException.class);
+
+    assertThrows(ValidationException.class,
+        () -> processDefinitionService.startProcessInstance(processDefinitionKey, authentication));
+    verify(formDataStorageService).putStartFormData(eq(processDefinitionKey), anyString(), any(FormDataDto.class));
+    verify(processDefinitionRemoteService).startProcessInstance(processDefinitionKey, formDataKey);
+    verify(formDataStorageService).delete(Set.of(formDataKey));
   }
 }
