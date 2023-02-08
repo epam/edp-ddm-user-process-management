@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,17 @@ import com.epam.digital.data.platform.starter.validation.dto.FormValidationRespo
 import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
 import com.epam.digital.data.platform.storage.form.dto.FormDataDto;
 import com.epam.digital.data.platform.storage.form.service.FormDataStorageService;
+import com.epam.digital.data.platform.usrprcssmgt.config.properties.BpGroupConfigurationProperties;
+import com.epam.digital.data.platform.usrprcssmgt.config.properties.BpGroupConfigurationProperties.GroupedProcessDefinition;
 import com.epam.digital.data.platform.usrprcssmgt.exception.StartFormException;
+import com.epam.digital.data.platform.usrprcssmgt.model.ProcessDefinitionGroup;
+import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GroupedProcessDefinitionResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessDefinitionRemoteService;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,6 +63,8 @@ class ProcessDefinitionServiceTest {
   private FormDataStorageService formDataStorageService;
   @Mock
   private FormValidationService formValidationService;
+  @Mock
+  private BpGroupConfigurationProperties bpGroupConfigurationProperties;
 
   @Test
   void startProcessInstance() {
@@ -237,5 +246,39 @@ class ProcessDefinitionServiceTest {
     verify(formDataStorageService).putStartFormData(eq(processDefinitionKey), anyString(), any(FormDataDto.class));
     verify(processDefinitionRemoteService).startProcessInstance(processDefinitionKey, formDataKey);
     verify(formDataStorageService).delete(Set.of(formDataKey));
+  }
+
+  @Test
+  void shouldObtainGroupedProcessDefinitions() {
+    var params = new GetProcessDefinitionsParams();
+    var groupName = "test";
+    var processDefinition = ProcessDefinitionResponse.builder().key("123").name("name1").build();
+    var processDefinition2 = ProcessDefinitionResponse.builder().key("234").name("name2").build();
+    var processDefinition3 = ProcessDefinitionResponse.builder().key("345").name("name3").build();
+    var processDefinitionResponses = List.of(processDefinition, processDefinition2, processDefinition3);
+    var groups = new ArrayList<GroupedProcessDefinition>();
+    var groupedDefinitionKeys = List.of("123");
+    var groupedProcessDefinition = new GroupedProcessDefinition();
+    groupedProcessDefinition.setProcessDefinitions(groupedDefinitionKeys);
+    groupedProcessDefinition.setName(groupName);
+    groups.add(groupedProcessDefinition);
+    var ungrouped = List.of("234");
+    var processDefinitionGroup = ProcessDefinitionGroup.builder()
+        .name(groupName)
+        .processDefinitions(List.of(processDefinition))
+        .build();
+    var expectedResponse = GroupedProcessDefinitionResponse.builder()
+        .groups(List.of(processDefinitionGroup))
+        .ungrouped(List.of(processDefinition2, processDefinition3))
+        .build();
+
+    when(bpGroupConfigurationProperties.getGroups()).thenReturn(groups);
+    when(bpGroupConfigurationProperties.getUngrouped()).thenReturn(ungrouped);
+    when(processDefinitionRemoteService.getProcessDefinitions(params)).thenReturn(processDefinitionResponses);
+
+    var result = processDefinitionService.getGroupedProcessDefinitions(params);
+
+    assertThat(result).isEqualTo(expectedResponse);
+    verify(processDefinitionRemoteService).getProcessDefinitions(params);
   }
 }

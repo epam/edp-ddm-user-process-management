@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.epam.digital.data.platform.bpms.api.dto.DdmProcessDefinitionDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GroupedProcessDefinitionResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.StubRequest;
 import java.util.List;
@@ -261,5 +262,44 @@ class ProcessDefinitionManagementIT extends BaseIT {
         .content("{\"data\" : { \"}}");
 
     performWithTokenOfficerRole(request).andExpect(status().is(400));
+  }
+
+  @Test
+  void getGroupedProcessDefinitions() {
+    mockBpmsRequest(StubRequest.builder()
+        .method(HttpMethod.POST)
+        .path(urlPathEqualTo("/api/extended/process-definition"))
+        .requestBody(equalToJson("{\"active\":true,\"latestVersion\":true,"
+            + "\"suspended\":false,\"sortBy\":\"name\",\"sortOrder\":\"asc\","
+            + "\"processDefinitionId\":null,\"processDefinitionIdIn\":null}"))
+        .status(200)
+        .responseBody(
+            "[ { \"id\": \"123\", \"key\": \"first-process-group\", \"name\":\"name1\" }, "
+                + "{ \"id\": \"345\", \"key\": \"without-group-1\", \"name\":\"name2\" }, "
+                + "{ \"id\": \"234\", \"key\": \"third-process-group\", \"name\":\"name3\" }, "
+                + "{ \"id\": \"567\", \"key\": \"without-group-2\", \"name\":\"name4\" }, "
+                + "{ \"id\": \"456\", \"key\": \"second-process-group\",  \"name\":\"name5\" }] ")
+        .responseHeaders(Map.of("Content-Type", List.of("application/json")))
+        .build());
+
+    var request = get("/api/grouped-process-definition?active=true&suspended=false")
+        .accept(MediaType.APPLICATION_JSON_VALUE);
+    var result = performForObjectAsOfficer(request, GroupedProcessDefinitionResponse.class);
+
+    assertThat(result).isNotNull();
+    assertThat(result.getGroups()).hasSize(1);
+    assertThat(result.getUngrouped()).hasSize(3);
+    assertThat(result.getGroups().get(0))
+        .hasFieldOrPropertyWithValue("name", "Test group name");
+    assertThat(result.getGroups().get(0).getProcessDefinitions().get(0).getKey())
+        .hasToString("first-process-group");
+    assertThat(result.getGroups().get(0).getProcessDefinitions().get(1).getKey())
+        .hasToString("third-process-group");
+    assertThat(result.getUngrouped().get(0))
+        .hasFieldOrPropertyWithValue("name", "name5");
+    assertThat(result.getUngrouped().get(1))
+        .hasFieldOrPropertyWithValue("name", "name2");
+    assertThat(result.getUngrouped().get(2))
+        .hasFieldOrPropertyWithValue("name", "name4");
   }
 }

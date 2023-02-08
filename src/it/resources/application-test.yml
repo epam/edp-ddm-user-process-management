@@ -61,3 +61,15 @@ token:
   cyI6WyJjaXRpemVuIl0sIm5hbWUiOiJ0ZXN0dXNlciB0ZXN0dXNlciIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3R1c2VyI\
   iwiZ2l2ZW5fbmFtZSI6InRlc3R1c2VyIiwiZmFtaWx5X25hbWUiOiJ0ZXN0dXNlciIsImVtYWlsIjoidGVzdHVzZXJAdGVzdH\
   VzZXIuY29tIn0.BmX7HJPwoY5LF1srPXTsvcnJ4LbqbJm4RyqXjsMXSN0"
+
+bp-grouping:
+  groups:
+    - name: Test group name
+      processDefinitions:
+        - first-process-group
+        - third-process-group
+    - name: Test forbidden group
+      processDefinitions:
+        - forbidden-process-group
+  ungrouped:
+    - second-process-group

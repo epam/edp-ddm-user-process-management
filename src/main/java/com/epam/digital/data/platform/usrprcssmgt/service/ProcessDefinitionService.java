@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,28 @@ import com.epam.digital.data.platform.starter.errorhandling.exception.Validation
 import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
 import com.epam.digital.data.platform.storage.form.dto.FormDataDto;
 import com.epam.digital.data.platform.storage.form.service.FormDataStorageService;
+import com.epam.digital.data.platform.usrprcssmgt.config.properties.BpGroupConfigurationProperties;
 import com.epam.digital.data.platform.usrprcssmgt.exception.StartFormException;
+import com.epam.digital.data.platform.usrprcssmgt.model.ProcessDefinitionGroup;
 import com.epam.digital.data.platform.usrprcssmgt.model.request.GetProcessDefinitionsParams;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.CountResponse;
+import com.epam.digital.data.platform.usrprcssmgt.model.response.GroupedProcessDefinitionResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.ProcessDefinitionResponse;
 import com.epam.digital.data.platform.usrprcssmgt.model.response.StartProcessInstanceResponse;
 import com.epam.digital.data.platform.usrprcssmgt.remote.ProcessDefinitionRemoteService;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.utils.Lists;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +64,7 @@ public class ProcessDefinitionService {
   private final ProcessDefinitionRemoteService processDefinitionRemoteService;
   private final FormDataStorageService formDataStorageService;
   private final FormValidationService formValidationService;
+  private final BpGroupConfigurationProperties bpGroupConfigurationProperties;
 
   /**
    * Getting process definition by process definition key
@@ -162,6 +173,71 @@ public class ProcessDefinitionService {
       formDataStorageService.delete(Set.of(formDataKey));
       throw exception;
     }
+  }
+
+  public GroupedProcessDefinitionResponse getGroupedProcessDefinitions(GetProcessDefinitionsParams params) {
+    log.info("Getting grouped process definitions. Params: {}", params);
+    var processDefinitions =
+        processDefinitionRemoteService.getProcessDefinitions(params).stream()
+            .collect(Collectors.toMap(ProcessDefinitionResponse::getKey, Function.identity()));
+
+    // getting the processes defined in the file and removing them from the map
+    var groupsResponse = getGroupedProcessDefinition(processDefinitions);
+    var ungroupedResponse = getUngroupedProcessDefinition(processDefinitions);
+
+    if (!processDefinitions.isEmpty()) {
+      var processesNotInTheGroupingFile = processDefinitions.values().stream()
+          .sorted(Comparator.comparing(ProcessDefinitionResponse::getName))
+          .collect(Collectors.toList());
+      ungroupedResponse.addAll(processesNotInTheGroupingFile);
+    }
+    log.info("Process definitions are found. Group count - {}, ungrouped processes - {}", groupsResponse.size(), ungroupedResponse.size());
+    return GroupedProcessDefinitionResponse.builder()
+        .groups(groupsResponse)
+        .ungrouped(ungroupedResponse)
+        .build();
+  }
+
+  private List<ProcessDefinitionResponse> getUngroupedProcessDefinition(Map<String, ProcessDefinitionResponse> processDefinitions) {
+    var ungrouped = bpGroupConfigurationProperties.getUngrouped();
+    if (Objects.isNull(ungrouped)) {
+      return Lists.newArrayList();
+    }
+    return getProcessDefinitionsDefinedInFile(ungrouped, processDefinitions);
+  }
+
+  private List<ProcessDefinitionGroup> getGroupedProcessDefinition(Map<String, ProcessDefinitionResponse> processDefinitions) {
+    var groups = bpGroupConfigurationProperties.getGroups();
+    if (Objects.isNull(groups)) {
+      return Lists.newArrayList();
+    }
+    var groupsResponse = new ArrayList<ProcessDefinitionGroup>();
+    groups.forEach(groupedProcessDefinition -> {
+      var definitionKeys = Optional.ofNullable(groupedProcessDefinition.getProcessDefinitions())
+              .orElse(Lists.newArrayList());
+      var groupedResponse = getProcessDefinitionsDefinedInFile(definitionKeys, processDefinitions);
+      if (!groupedResponse.isEmpty()) {
+        var processDefinitionGroup = new ProcessDefinitionGroup();
+        processDefinitionGroup.setName(groupedProcessDefinition.getName());
+        processDefinitionGroup.setProcessDefinitions(groupedResponse);
+        groupsResponse.add(processDefinitionGroup);
+      }
+    });
+
+    return groupsResponse;
+  }
+
+  private List<ProcessDefinitionResponse> getProcessDefinitionsDefinedInFile(
+      List<String> processDefinitionKeys, Map<String, ProcessDefinitionResponse> processDefinitions) {
+    var result = new ArrayList<ProcessDefinitionResponse>();
+    processDefinitionKeys.forEach(key -> {
+      var processDefinition = processDefinitions.get(key);
+      if (Objects.nonNull(processDefinition)) {
+        result.add(processDefinition);
+        processDefinitions.remove(key);
+      }
+    });
+    return result;
   }
 
   private String getStartFormKey(ProcessDefinitionResponse processDefinition) {

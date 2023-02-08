@@ -73,6 +73,8 @@ spec:
             mountPath: {{ .Values.appConfigMountPath }}
           - name: {{ .Chart.Name }}-redis-credentials
             mountPath: {{ .Values.redisSecretsMountPath }}
+          - name: {{ .Values.bpGrouping.configName }}
+            mountPath: {{ .Values.appConfigMountPath }}/{{ .Values.bpGrouping.configName }}
       serviceAccountName: {{ .Chart.Name }}
       {{- if .Values.nodeSelector }}
       nodeSelector: {{ toYaml .Values.nodeSelector | nindent 8 }}
@@ -84,6 +86,9 @@ spec:
         - name: {{ .Chart.Name }}
           configMap:
             name: {{ .Chart.Name }}
+        - name: {{ .Values.bpGrouping.configName }}
+          configMap:
+            name: {{ .Values.bpGrouping.configName }}
         - name: {{ .Chart.Name }}-redis-credentials
           secret:
             secretName: {{ .Values.redis.secretName }}
