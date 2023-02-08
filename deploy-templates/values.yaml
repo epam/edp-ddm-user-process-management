@@ -60,3 +60,6 @@ redis:
   secretName: redis-auth
 
 deployProfile: prod
+
+bpGrouping:
+  configName: bp-grouping

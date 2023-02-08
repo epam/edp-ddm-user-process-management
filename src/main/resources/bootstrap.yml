@@ -6,6 +6,7 @@ spring:
         enable-api: false
         paths:
           - /app/config/application.yml
+          - /app/config/bp-grouping/bp-grouping.yml
       secrets:
         enabled: true
         enable-api: false

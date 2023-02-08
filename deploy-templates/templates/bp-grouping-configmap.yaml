@@ -1,0 +1,13 @@
+{{- $configMap := (lookup "v1" "ConfigMap" .Release.Namespace .Values.bpGrouping.configName) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.bpGrouping.configName }}
+{{- if $configMap }}
+data:
+{{ $configMap.data | toYaml | nindent 2 }}
+{{- else }}
+data:
+  bp-grouping.yml: |
+    bp-grouping: {}
+{{- end -}}
