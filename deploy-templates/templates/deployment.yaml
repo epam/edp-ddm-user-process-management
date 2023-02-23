@@ -63,16 +63,6 @@ spec:
           - name: {{ $name }}
             value: {{ $value | quote}}
           {{- end }}
-          - name: CEPH_BUCKET_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Values.ceph.bucketName }}
-                key: BUCKET_HOST
-          - name: CEPH_BUCKET_NAME
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Values.ceph.bucketName }}
-                key: BUCKET_NAME
           - name: REDIS_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -81,8 +71,6 @@ spec:
         volumeMounts:
           - name: {{ .Chart.Name }}
             mountPath: {{ .Values.appConfigMountPath }}
-          - name: {{ .Chart.Name }}-ceph-bucket-credentials
-            mountPath: {{ .Values.cephSecretMountPath }}
           - name: {{ .Chart.Name }}-redis-credentials
             mountPath: {{ .Values.redisSecretsMountPath }}
       serviceAccountName: {{ .Chart.Name }}
@@ -96,14 +84,6 @@ spec:
         - name: {{ .Chart.Name }}
           configMap:
             name: {{ .Chart.Name }}
-        - name: {{ .Chart.Name }}-ceph-bucket-credentials
-          secret:
-            secretName: {{ .Values.ceph.bucketName }}
-            items:
-              - key: AWS_ACCESS_KEY_ID
-                path: ceph.access-key
-              - key: AWS_SECRET_ACCESS_KEY
-                path: ceph.secret-key
         - name: {{ .Chart.Name }}-redis-credentials
           secret:
             secretName: {{ .Values.redis.secretName }}

@@ -38,16 +38,6 @@ ingress: # expose the service with a route or an ingress depending on platform t
 monitoring:
   namespace: openshift-monitoring
 
-ceph:
-  bucketName: lowcode-form-data-storage
-  host: ${CEPH_BUCKET_HOST}
-
-s3:
-  config:
-    client:
-      protocol: http
-    options:
-      pathStyleAccess: true
 
 keycloak:
   realms:
