@@ -73,3 +73,4 @@ logbook:
       - x-access-token
       - x-id-token
       - x-userinfo
+      - cookie
