@@ -23,7 +23,7 @@
 
     <bpm.api.version>1.6.0.1</bpm.api.version>
     <ddm-form-data-storage.version>1.8.0.1</ddm-form-data-storage.version>
-    <ddm-starter-security.version>1.6.0.1</ddm-starter-security.version>
+    <ddm-starter-security.version>1.6.0.12</ddm-starter-security.version>
     <ddm-starter-logger.version>1.6.0.1</ddm-starter-logger.version>
     <ddm-starter-error-handler.version>1.6.0.1</ddm-starter-error-handler.version>
     <ddm-starter-actuator.version>1.6.0.1</ddm-starter-actuator.version>
