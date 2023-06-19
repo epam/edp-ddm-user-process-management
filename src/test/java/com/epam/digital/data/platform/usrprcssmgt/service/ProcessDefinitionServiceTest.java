@@ -26,6 +26,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.epam.digital.data.platform.integration.formprovider.dto.FormDataValidationDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ErrorsListDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
@@ -103,7 +104,7 @@ class ProcessDefinitionServiceTest {
         .thenReturn(processDefinition);
 
     var formValidationResult = FormValidationResponseDto.builder().isValid(true).build();
-    when(formValidationService.validateForm(startFormKey, formDataDto))
+    when(formValidationService.validateForm(eq(startFormKey), any()))
         .thenReturn(formValidationResult);
 
     var formDataKey = "formDataKey";
@@ -147,7 +148,7 @@ class ProcessDefinitionServiceTest {
 
     assertThat(ex.getMessage()).isEqualTo("Start form does not exist!");
 
-    verify(formValidationService, never()).validateForm(anyString(), any(FormDataDto.class));
+    verify(formValidationService, never()).validateForm(anyString(), any(FormDataValidationDto.class));
     verify(formDataStorageService, never()).putFormData(anyString(), anyString(), any(FormDataDto.class));
     verify(formDataStorageService, never()).delete(any());
     verify(processDefinitionRemoteService, never()).startProcessInstance(anyString(), anyString());
@@ -176,7 +177,7 @@ class ProcessDefinitionServiceTest {
         .isValid(false)
         .error(error)
         .build();
-    when(formValidationService.validateForm(startFormKey, formDataDto))
+    when(formValidationService.validateForm(eq(startFormKey), any()))
         .thenReturn(formValidationResult);
 
     var authentication = mock(Authentication.class);
@@ -211,7 +212,7 @@ class ProcessDefinitionServiceTest {
 
     when(processDefinitionRemoteService.getProcessDefinitionByKey(processDefinitionKey))
         .thenReturn(processDefinition);
-    when(formValidationService.validateForm(startFormKey, formDataDto))
+    when(formValidationService.validateForm(eq(startFormKey), any()))
         .thenReturn(formValidationResult);
     when(authentication.getCredentials()).thenReturn("token");
     when(formDataStorageService.putStartFormData(eq(processDefinitionKey), anyString(), eq(formDataDto)))
@@ -223,7 +224,8 @@ class ProcessDefinitionServiceTest {
         () -> processDefinitionService.startProcessInstanceWithForm(processDefinitionKey,
             formDataDto, authentication));
     verify(processDefinitionRemoteService).getProcessDefinitionByKey(processDefinitionKey);
-    verify(formValidationService).validateForm(startFormKey, formDataDto);
+    var formValidationDto = FormDataValidationDto.builder().data(formDataDto.getData()).build();
+    verify(formValidationService).validateForm(startFormKey, formValidationDto);
     verify(formDataStorageService).putStartFormData(eq(processDefinitionKey), anyString(), any(FormDataDto.class));
     verify(processDefinitionRemoteService).startProcessInstance(processDefinitionKey, formDataKey);
     verify(formDataStorageService).delete(Set.of(formDataKey));

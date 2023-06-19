@@ -16,6 +16,7 @@
 
 package com.epam.digital.data.platform.usrprcssmgt.service;
 
+import com.epam.digital.data.platform.integration.formprovider.dto.FormDataValidationDto;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
 import com.epam.digital.data.platform.starter.validation.service.FormValidationService;
 import com.epam.digital.data.platform.storage.form.dto.FormDataDto;
@@ -150,7 +151,7 @@ public class ProcessDefinitionService {
     log.trace("Found process definition with key - {} and formKey - {}. Id - {}",
         key, startFormKey, processDefinition.getId());
 
-    validateFormData(startFormKey, formDataDto);
+    validateFormData(processDefinition, formDataDto);
     log.trace("Process definition form data is valid. Id - {}", processDefinition.getId());
 
     return startProcess(key, formDataDto, authentication);
@@ -249,11 +250,17 @@ public class ProcessDefinitionService {
     throw new StartFormException("Start form does not exist!");
   }
 
-  private void validateFormData(String formId, FormDataDto formDataDto) {
+  private void validateFormData(ProcessDefinitionResponse processDefinition, FormDataDto formDataDto) {
     log.debug("Start validation of start formData");
-    var formValidationResponseDto = formValidationService.validateForm(formId, formDataDto);
+    var formValidationDto =
+        FormDataValidationDto.builder()
+            .data(formDataDto.getData())
+            .processInstanceId(processDefinition.getId())
+            .build();
+    var formValidationResponseDto = formValidationService.validateForm(getStartFormKey(processDefinition),
+        formValidationDto);
     if (!formValidationResponseDto.isValid()) {
-      log.warn("Start form data did not pass validation, form key: {}", formId);
+      log.warn("Start form data did not pass validation, form key: {}", processDefinition.getFormKey());
       throw new ValidationException(formValidationResponseDto.getError());
     }
     log.debug("FormData passed the validation");
