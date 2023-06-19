@@ -22,13 +22,13 @@
     <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
 
     <bpm.api.version>1.6.0.1</bpm.api.version>
-    <ddm-form-data-storage.version>1.8.0.1</ddm-form-data-storage.version>
+    <ddm-form-data-storage.version>1.8.0.5</ddm-form-data-storage.version>
     <ddm-starter-security.version>1.6.0.13</ddm-starter-security.version>
     <ddm-starter-logger.version>1.6.0.1</ddm-starter-logger.version>
     <ddm-starter-error-handler.version>1.6.0.1</ddm-starter-error-handler.version>
     <ddm-starter-actuator.version>1.6.0.1</ddm-starter-actuator.version>
     <ddm-starter-localization.version>1.6.0.1</ddm-starter-localization.version>
-    <ddm-starter-validation.version>1.6.0.9</ddm-starter-validation.version>
+    <ddm-starter-validation.version>1.6.0.14</ddm-starter-validation.version>
     <log4j.version>2.17.0</log4j.version>
     <embedded-redis.version>0.7.1</embedded-redis.version>
     <spring-security-core.version>5.7.5</spring-security-core.version>

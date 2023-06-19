@@ -217,7 +217,7 @@ class ProcessDefinitionManagementIT extends BaseIT {
 
   @Test
   void failedStartProcessInstanceWithFormInvalidFormData() {
-    var processDefinitionId = "processDefinitionId";
+    var processDefinitionId = "processInstanceId";
     var processDefinitionKey = "testKey";
 
     mockBpmsRequest(StubRequest.builder()
