@@ -1,15 +1,21 @@
 global:
-  disableRequestsLimits: false
   registry:
     userProcessManagement:
+      replicas: 1
+      hpa:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
       istio:
         sidecar:
           enabled: true
           resources:
-            limits: {}
             requests: {}
+            limits: {}
       container:
-        resources: {}
+        resources:
+          requests: {}
+          limits: {}
         envVars: {}
 
 podAnnotations: {}
@@ -20,7 +26,6 @@ port: 8080
 service:
   type: ClusterIP
   port: 8080
-replicas: 1
 appConfigMountPath: "/app/config"
 readinessPath: "/user-process-management/actuator/health/readiness"
 livenessPath: "/user-process-management/actuator/health/liveness"

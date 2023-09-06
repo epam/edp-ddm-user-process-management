@@ -8,7 +8,9 @@ spec:
   selector:
     matchLabels:
       app: {{ .Chart.Name }}
-  replicas: {{ .Values.replicas }}
+  {{- if not .Values.global.registry.userProcessManagement.hpa.enabled }}
+  replicas: {{ .Values.global.registry.userProcessManagement.replicas }}
+  {{- end }}
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -55,7 +57,7 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 5
-        {{- if not .Values.global.disableRequestsLimits }}
+        {{- if or .Values.global.registry.userProcessManagement.container.resources.requests .Values.global.registry.userProcessManagement.container.resources.limits }}
         resources:
           {{- toYaml .Values.global.registry.userProcessManagement.container.resources | nindent 10 }}
         {{- end }}
