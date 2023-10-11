@@ -21,3 +21,6 @@ s3:
       protocol: http
     options:
       pathStyleAccess: true
+
+locale:
+  language: "uk"

@@ -27,7 +27,7 @@
     <ddm-starter-logger.version>1.6.0.1</ddm-starter-logger.version>
     <ddm-starter-error-handler.version>1.6.0.1</ddm-starter-error-handler.version>
     <ddm-starter-actuator.version>1.6.0.1</ddm-starter-actuator.version>
-    <ddm-starter-localization.version>1.6.0.1</ddm-starter-localization.version>
+    <ddm-starter-localization.version>1.6.0.11</ddm-starter-localization.version>
     <ddm-starter-validation.version>1.6.0.14</ddm-starter-validation.version>
     <log4j.version>2.17.0</log4j.version>
     <embedded-redis.version>0.7.1</embedded-redis.version>
@@ -212,6 +212,27 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>pre-integration-test</id>
+            <goals>
+              <goal>start</goal>
+            </goals>
+            <configuration>
+<!--          <fork>false</fork> Fixes Windows issue: The filename or extension is too long-->
+              <useTestClasspath>true</useTestClasspath>
+              <directories>${project.build.testOutputDirectory}</directories>
+              <mainClass>com.epam.digital.data.platform.usrprcssmgt.TestApp</mainClass>
+              <jvmArguments>-Dspring.profiles.active=test</jvmArguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>post-integration-test</id>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -266,6 +287,24 @@
             <goals>
               <goal>makeAggregateBom</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-maven-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <apiDocsUrl>http://localhost:8080/user-process-management/v3/api-docs.yaml</apiDocsUrl>
+              <outputFileName>swagger.yml</outputFileName>
+              <outputDir>openapi</outputDir>
+            </configuration>
           </execution>
         </executions>
       </plugin>

@@ -16,22 +16,26 @@
 
 package com.epam.digital.data.platform.usrprcssmgt;
 
-import com.epam.digital.data.platform.bpms.client.config.FeignConfig;
+import com.epam.digital.data.platform.usrprcssmgt.config.TestConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
+
 /**
- * The class represents a spring boot application runner that is used for running the application.
+ * The class represents a spring boot application runner that is used for running the application
+ * for openapi-doc generation.
  */
 @SpringBootApplication
-@Import(FeignConfig.class)
-@EnableConfigurationProperties
-public class UserProcessManagementApplication {
+@Import(TestConfig.class)
+@ComponentScan(
+    basePackages = {"com.epam.digital.data.platform.usrprcssmgt.controller"}
+)
+public class TestApp {
 
   public static void main(String[] args) {
-    SpringApplication.run(UserProcessManagementApplication.class, args);
+    SpringApplication.run(TestApp.class, args);
   }
 
 }

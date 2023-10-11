@@ -15,3 +15,8 @@ data:
     redis.endpoint : rfs-redis-sentinel.{{ .Release.Namespace }}.svc:26379
     storage: {{ toYaml .Values.storage | nindent 6 }}
     platform.security.csrf.enabled: {{ .Values.platform.security.csrf.enabled }}
+    
+    {{- if .Values.global.language }}
+    locale:
+      language: {{ .Values.global.language }}
+    {{- end }}

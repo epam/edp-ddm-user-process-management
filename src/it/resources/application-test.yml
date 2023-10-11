@@ -1,6 +1,11 @@
 bpms:
   url: http://localhost:8800
 
+platform:
+  security:
+    whitelist:
+      - /v3/api-docs.yaml
+
 storage:
   form-data:
     type: redis
@@ -73,3 +78,5 @@ bp-grouping:
         - forbidden-process-group
   ungrouped:
     - second-process-group
+locale:
+  language: "en"

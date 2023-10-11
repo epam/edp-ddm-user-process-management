@@ -1,0 +1,11 @@
+{
+  "process-instance.status.title.pending": "Pending task execution",
+  "process-instance.status.title.in-progress": "In progress",
+  "process-instance.status.title.suspended": "Suspended by administrator",
+  "process-instance.status.title.completed": "Service provided has been completed",
+  "process-instance.status.title.externally-terminated": "Terminated by administrator",
+
+  "process-instance.status.title.citizen-pending": "Draft",
+  "process-instance.status.title.citizen-in-progress": "Under processing",
+  "process-instance.status.title.citizen-suspended": "Service temporarily unavailable"
+}

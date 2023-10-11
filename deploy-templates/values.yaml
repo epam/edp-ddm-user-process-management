@@ -1,7 +1,19 @@
 global:
+  container:
+    requestsLimitsEnabled: true
+  istio:
+    sidecar:
+      requestsLimitsEnabled: true
+      resources:
+        requests: {}
+        limits: {}
   registry:
     userProcessManagement:
-      replicas: 1
+      container:
+        envVars: {}
+        resources:
+          requests: {}
+          limits: {}
       hpa:
         enabled: false
         minReplicas: 1
@@ -12,11 +24,7 @@ global:
           resources:
             requests: {}
             limits: {}
-      container:
-        resources:
-          requests: {}
-          limits: {}
-        envVars: {}
+      replicas: 1
 
 podAnnotations: {}
 image:
